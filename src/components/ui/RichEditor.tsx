@@ -26,8 +26,8 @@ const FontSize = Extension.create({
   },
   addCommands() {
     return {
-      setFontSize: (size: string) => ({ chain }: { chain: () => Record<string, (...args: never[]) => unknown> }) => {
-        const c = chain() as Record<string, (...args: never[]) => Record<string, (...args: never[]) => unknown>>;
+      setFontSize: (size: string) => ({ chain }: { chain: () => unknown }) => {
+        const c = chain() as { setMark: (name: string, attrs: object) => { run: () => boolean } };
         return c.setMark("textStyle", { fontSize: size }).run();
       },
     } as never;
