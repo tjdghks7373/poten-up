@@ -118,7 +118,7 @@ export default function DatePicker({ value, onChange, placeholder }: Props) {
     <Wrapper>
       <ReactDatePicker
         selected={selected}
-        onChange={(date) => onChange(date ? date.toISOString().slice(0, 10) : "")}
+        onChange={(date: Date | null) => onChange(date ? date.toISOString().slice(0, 10) : "")}
         dateFormat="yyyy-MM-dd"
         locale="ko"
         placeholderText={placeholder ?? "날짜 선택"}
