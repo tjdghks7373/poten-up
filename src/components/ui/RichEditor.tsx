@@ -222,10 +222,10 @@ export default function RichEditor({ value, onChange, placeholder }: Props) {
           value={editor.getAttributes("textStyle").fontSize ?? ""}
           onChange={(e) => {
             if (e.target.value) {
-              (editor.chain().focus() as ReturnType<typeof editor.chain> & { setFontSize: (s: string) => ReturnType<typeof editor.chain> })
-                .setFontSize(e.target.value).run();
+              const chain = editor!.chain().focus() as { setFontSize: (s: string) => { run: () => boolean } };
+              chain.setFontSize(e.target.value).run();
             } else {
-              editor.chain().focus().unsetMark("textStyle").run();
+              editor!.chain().focus().unsetMark("textStyle").run();
             }
           }}
         >
