@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import styled from "styled-components";
+import { theme } from "@/lib/theme";
 
 const links = [
   { href: "/books", label: "도서 목록" },
@@ -9,53 +11,134 @@ const links = [
   { href: "/authors", label: "작가 소개" },
 ];
 
+const Header = styled.header`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: ${theme.colors.bg}e6;
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid ${theme.colors.border};
+`;
+
+const Inner = styled.div`
+  max-width: ${theme.maxWidth};
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  height: 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const Logo = styled(Link)`
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: ${theme.colors.brand};
+  letter-spacing: -0.025em;
+`;
+
+const Nav = styled.nav`
+  display: none;
+  align-items: center;
+  gap: 2rem;
+
+  @media (min-width: 768px) {
+    display: flex;
+  }
+`;
+
+const NavLink = styled(Link)`
+  font-size: 0.875rem;
+  color: ${theme.colors.muted};
+  transition: color 0.2s;
+
+  &:hover {
+    color: ${theme.colors.fg};
+  }
+`;
+
+const MenuButton = styled.button`
+  padding: 0.5rem;
+  color: ${theme.colors.fg};
+
+  @media (min-width: 768px) {
+    display: none;
+  }
+`;
+
+const Bar = styled.span`
+  display: block;
+  width: 1.25rem;
+  height: 2px;
+  background: currentColor;
+  margin-bottom: 4px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+`;
+
+const MobileMenu = styled.div`
+  background: ${theme.colors.bg};
+  border-top: 1px solid ${theme.colors.border};
+  padding: 0 1rem 1rem;
+
+  @media (min-width: 768px) {
+    display: none;
+  }
+`;
+
+const MobileLink = styled(Link)`
+  display: block;
+  padding: 0.75rem 0;
+  font-size: 0.875rem;
+  color: ${theme.colors.muted};
+  border-bottom: 1px solid ${theme.colors.border};
+  transition: color 0.2s;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    color: ${theme.colors.fg};
+  }
+`;
+
 export default function Navbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-[var(--bg)]/90 backdrop-blur-md border-b border-[var(--border)]">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-        <Link href="/" className="text-xl font-bold text-[var(--brand)] tracking-tight">
-          포텐업
-        </Link>
+    <Header>
+      <Inner>
+        <Logo href="/">포텐업</Logo>
 
-        <nav className="hidden md:flex items-center gap-8">
+        <Nav>
           {links.map((l) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              className="text-sm text-[var(--muted)] hover:text-[var(--fg)] transition-colors"
-            >
+            <NavLink key={l.href} href={l.href}>
               {l.label}
-            </Link>
+            </NavLink>
           ))}
-        </nav>
+        </Nav>
 
-        <button
-          className="md:hidden p-2 text-[var(--fg)]"
-          onClick={() => setOpen(!open)}
-          aria-label="메뉴"
-        >
-          <span className="block w-5 h-0.5 bg-current mb-1" />
-          <span className="block w-5 h-0.5 bg-current mb-1" />
-          <span className="block w-5 h-0.5 bg-current" />
-        </button>
-      </div>
+        <MenuButton onClick={() => setOpen(!open)} aria-label="메뉴">
+          <Bar />
+          <Bar />
+          <Bar />
+        </MenuButton>
+      </Inner>
 
       {open && (
-        <div className="md:hidden bg-[var(--bg)] border-t border-[var(--border)] px-4 pb-4">
+        <MobileMenu>
           {links.map((l) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              className="block py-3 text-sm text-[var(--muted)] hover:text-[var(--fg)] transition-colors border-b border-[var(--border)] last:border-0"
-              onClick={() => setOpen(false)}
-            >
+            <MobileLink key={l.href} href={l.href} onClick={() => setOpen(false)}>
               {l.label}
-            </Link>
+            </MobileLink>
           ))}
-        </div>
+        </MobileMenu>
       )}
-    </header>
+    </Header>
   );
 }

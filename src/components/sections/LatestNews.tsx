@@ -4,14 +4,110 @@ import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Link from "next/link";
+import styled from "styled-components";
+import { theme } from "@/lib/theme";
 import { NewsItem } from "@/types";
 
 gsap.registerPlugin(ScrollTrigger);
+
+const Section = styled.section`
+  padding: 6rem 0;
+  background: ${theme.colors.bg};
+`;
+
+const Inner = styled.div`
+  max-width: ${theme.maxWidth};
+  margin: 0 auto;
+  padding: 0 1.5rem;
+`;
+
+const Header = styled.div`
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 3rem;
+`;
+
+const SectionTitle = styled.h2`
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: ${theme.colors.brand};
+
+  @media (min-width: 640px) {
+    font-size: 2.25rem;
+  }
+`;
+
+const ViewAll = styled(Link)`
+  font-size: 0.875rem;
+  color: ${theme.colors.muted};
+  transition: color 0.2s;
+
+  &:hover {
+    color: ${theme.colors.fg};
+  }
+`;
+
+const List = styled.div`
+  & > * + * {
+    border-top: 1px solid ${theme.colors.border};
+  }
+`;
+
+const NewsLink = styled(Link)`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 0;
+`;
+
+const Left = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+`;
+
+const CategoryBadge = styled.span`
+  display: none;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  background: ${theme.colors.brand}1a;
+  color: ${theme.colors.brand};
+  font-weight: 500;
+
+  @media (min-width: 640px) {
+    display: inline;
+  }
+`;
+
+const NewsTitle = styled.p<{ $hover?: boolean }>`
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: ${theme.colors.fg};
+  transition: color 0.2s;
+
+  ${NewsLink}:hover & {
+    color: ${theme.colors.brand};
+  }
+
+  @media (min-width: 640px) {
+    font-size: 1rem;
+  }
+`;
+
+const Date = styled.span`
+  font-size: 0.75rem;
+  color: ${theme.colors.muted};
+  flex-shrink: 0;
+  margin-left: 1rem;
+`;
 
 export default function LatestNews({ news }: { news: NewsItem[] }) {
   const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
+    if (news.length === 0) return;
     const ctx = gsap.context(() => {
       gsap.fromTo(
         ".news-title",
@@ -41,41 +137,28 @@ export default function LatestNews({ news }: { news: NewsItem[] }) {
     return () => ctx.revert();
   }, []);
 
-  return (
-    <section ref={sectionRef} className="py-24 bg-[var(--bg)]">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="flex items-end justify-between mb-12">
-          <h2 className="news-title text-3xl sm:text-4xl font-bold text-[var(--brand)]">
-            뉴스 / 공지
-          </h2>
-          <Link
-            href="/news"
-            className="text-sm text-[var(--muted)] hover:text-[var(--fg)] transition-colors"
-          >
-            전체보기 →
-          </Link>
-        </div>
+  if (news.length === 0) return null;
 
-        <div className="divide-y divide-[var(--border)]">
+  return (
+    <Section ref={sectionRef}>
+      <Inner>
+        <Header>
+          <SectionTitle className="news-title">뉴스 / 공지</SectionTitle>
+          <ViewAll href="/news">전체보기 →</ViewAll>
+        </Header>
+
+        <List>
           {news.slice(0, 5).map((item) => (
-            <Link
-              key={item.id}
-              href={`/news/${item.slug}`}
-              className="news-item flex items-center justify-between py-5 group"
-            >
-              <div className="flex items-center gap-4">
-                <span className="hidden sm:inline text-xs px-2 py-1 rounded-full bg-[var(--brand)]/10 text-[var(--brand)] font-medium">
-                  {item.category}
-                </span>
-                <p className="text-sm sm:text-base font-medium text-[var(--fg)] group-hover:text-[var(--brand)] transition-colors">
-                  {item.title}
-                </p>
-              </div>
-              <span className="text-xs text-[var(--muted)] shrink-0 ml-4">{item.date}</span>
-            </Link>
+            <NewsLink key={item.id} href={`/news/${item.slug}`} className="news-item">
+              <Left>
+                <CategoryBadge>{item.category}</CategoryBadge>
+                <NewsTitle>{item.title}</NewsTitle>
+              </Left>
+              <Date>{item.date}</Date>
+            </NewsLink>
           ))}
-        </div>
-      </div>
-    </section>
+        </List>
+      </Inner>
+    </Section>
   );
 }

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
+import StyledComponentsRegistry from "@/lib/registry";
 
 export const metadata: Metadata = {
   title: "포텐업 출판사",
@@ -28,9 +29,11 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <Navbar />
-        <main>{children}</main>
-        <Footer />
+        <StyledComponentsRegistry>
+          <Navbar />
+          <main>{children}</main>
+          <Footer />
+        </StyledComponentsRegistry>
       </body>
     </html>
   );

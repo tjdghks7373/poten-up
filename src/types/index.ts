@@ -8,6 +8,7 @@ export interface Book {
   publishedAt: string;
   genre: string;
   featured: boolean;
+  isNew: boolean;
 }
 
 export interface NewsItem {

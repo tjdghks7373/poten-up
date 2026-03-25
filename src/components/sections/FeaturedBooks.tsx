@@ -5,15 +5,146 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Image from "next/image";
 import Link from "next/link";
+import styled from "styled-components";
+import { theme } from "@/lib/theme";
 import { Book } from "@/types";
 
 gsap.registerPlugin(ScrollTrigger);
+
+const Section = styled.section`
+  padding: 6rem 0;
+  background: ${theme.colors.white};
+`;
+
+const Inner = styled.div`
+  max-width: ${theme.maxWidth};
+  margin: 0 auto;
+  padding: 0 1.5rem;
+`;
+
+const Header = styled.div`
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 3rem;
+`;
+
+const SectionTitle = styled.h2`
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: ${theme.colors.brand};
+
+  @media (min-width: 640px) {
+    font-size: 2.25rem;
+  }
+`;
+
+const ViewAll = styled(Link)`
+  font-size: 0.875rem;
+  color: ${theme.colors.muted};
+  transition: color 0.2s;
+
+  &:hover {
+    color: ${theme.colors.fg};
+  }
+`;
+
+const Grid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+`;
+
+const BookCard = styled(Link)`
+  display: block;
+`;
+
+const CoverWrapper = styled.div`
+  aspect-ratio: 3/4;
+  position: relative;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: ${theme.colors.border};
+  margin-bottom: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  transition: box-shadow 0.2s;
+
+  ${BookCard}:hover & {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+`;
+
+const CoverImage = styled(Image)`
+  object-fit: cover;
+  transition: transform 0.5s;
+
+  ${BookCard}:hover & {
+    transform: scale(1.05);
+  }
+`;
+
+const NoCover = styled.div`
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: ${theme.colors.muted};
+  font-size: 0.875rem;
+`;
+
+const Genre = styled.p`
+  font-size: 0.75rem;
+  color: ${theme.colors.accent};
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+`;
+
+const BookTitle = styled.h3`
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: ${theme.colors.fg};
+  line-height: 1.3;
+  margin-bottom: 0.125rem;
+  transition: color 0.2s;
+
+  ${BookCard}:hover & {
+    color: ${theme.colors.brand};
+  }
+`;
+
+const Author = styled.p`
+  font-size: 0.75rem;
+  color: ${theme.colors.muted};
+`;
+
+const NewBadge = styled.span`
+  display: inline-block;
+  font-size: 0.625rem;
+  font-weight: 700;
+  padding: 0.125rem 0.375rem;
+  border-radius: 9999px;
+  background: ${theme.colors.accent};
+  color: ${theme.colors.white};
+  margin-left: 0.375rem;
+  vertical-align: middle;
+  letter-spacing: 0.05em;
+`;
 
 export default function FeaturedBooks({ books }: { books: Book[] }) {
   const sectionRef = useRef<HTMLElement>(null);
   const cardsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (books.length === 0) return;
     const ctx = gsap.context(() => {
       gsap.fromTo(
         ".featured-title",
@@ -49,50 +180,36 @@ export default function FeaturedBooks({ books }: { books: Book[] }) {
     return () => ctx.revert();
   }, []);
 
-  return (
-    <section ref={sectionRef} className="py-24 bg-white">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="flex items-end justify-between mb-12">
-          <h2 className="featured-title text-3xl sm:text-4xl font-bold text-[var(--brand)]">
-            추천 도서
-          </h2>
-          <Link
-            href="/books"
-            className="text-sm text-[var(--muted)] hover:text-[var(--fg)] transition-colors"
-          >
-            전체보기 →
-          </Link>
-        </div>
+  if (books.length === 0) return null;
 
-        <div
-          ref={cardsRef}
-          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
-        >
+  return (
+    <Section ref={sectionRef}>
+      <Inner>
+        <Header>
+          <SectionTitle className="featured-title">추천 도서</SectionTitle>
+          <ViewAll href="/books">전체보기 →</ViewAll>
+        </Header>
+
+        <Grid ref={cardsRef}>
           {books.slice(0, 4).map((book) => (
-            <Link key={book.id} href={`/books/${book.slug}`} className="book-card group">
-              <div className="aspect-[3/4] relative rounded-lg overflow-hidden bg-[var(--border)] mb-3 shadow-sm group-hover:shadow-md transition-shadow">
+            <BookCard key={book.id} href={`/books/${book.slug}`} className="book-card">
+              <CoverWrapper>
                 {book.cover ? (
-                  <Image
-                    src={book.cover}
-                    alt={book.title}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
+                  <CoverImage src={book.cover} alt={book.title} fill />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-[var(--muted)] text-sm">
-                    표지 없음
-                  </div>
+                  <NoCover>표지 없음</NoCover>
                 )}
-              </div>
-              <p className="text-xs text-[var(--accent)] font-medium mb-1">{book.genre}</p>
-              <h3 className="text-sm font-semibold text-[var(--fg)] leading-snug mb-0.5 group-hover:text-[var(--brand)] transition-colors">
+              </CoverWrapper>
+              <Genre>{book.genre}</Genre>
+              <BookTitle>
                 {book.title}
-              </h3>
-              <p className="text-xs text-[var(--muted)]">{book.author}</p>
-            </Link>
+                {book.isNew && <NewBadge>NEW</NewBadge>}
+              </BookTitle>
+              <Author>{book.author}</Author>
+            </BookCard>
           ))}
-        </div>
-      </div>
-    </section>
+        </Grid>
+      </Inner>
+    </Section>
   );
 }

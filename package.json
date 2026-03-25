@@ -9,20 +9,28 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@notionhq/client": "^2.3.0",
+    "@supabase/supabase-js": "^2.100.0",
+    "@tiptap/extension-color": "^3.20.5",
+    "@tiptap/extension-placeholder": "^3.20.5",
+    "@tiptap/extension-text-style": "^3.20.5",
+    "@tiptap/extension-underline": "^3.20.5",
+    "@tiptap/react": "^3.20.5",
+    "@tiptap/starter-kit": "^3.20.5",
     "gsap": "^3.14.2",
     "next": "16.2.1",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-datepicker": "^9.1.0",
+    "react-dom": "19.2.4",
+    "styled-components": "^6.3.12"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
+    "@types/react-datepicker": "^6.2.0",
     "@types/react-dom": "^19",
+    "@types/styled-components": "^5.1.36",
     "eslint": "^9",
     "eslint-config-next": "16.2.1",
-    "tailwindcss": "^4",
     "typescript": "^5"
   }
 }

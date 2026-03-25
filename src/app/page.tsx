@@ -18,7 +18,7 @@ export default async function HomePage() {
   return (
     <>
       <Hero />
-      <FeaturedBooks books={featuredBooks.length > 0 ? featuredBooks : books} />
+      <FeaturedBooks books={featuredBooks} />
       <LatestNews news={news} />
       <AuthorsSection authors={authors} />
     </>
