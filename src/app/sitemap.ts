@@ -1,6 +1,8 @@
 import type { MetadataRoute } from "next";
 import { getBooks, getNews } from "@/lib/db";
 
+export const dynamic = "force-dynamic";
+
 const BASE_URL = "https://poten-up.vercel.app";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
