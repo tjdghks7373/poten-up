@@ -392,9 +392,12 @@ export default function BooksAdmin() {
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.25rem" }}>
           <SectionTitle style={{ marginBottom: 0 }}>도서 목록 ({books.length})</SectionTitle>
           {orderChanged && (
-            <SaveOrderBtn onClick={saveOrder} disabled={savingOrder}>
-              {savingOrder ? "저장 중..." : "순서 저장"}
-            </SaveOrderBtn>
+            <ActionBtns>
+              <SaveOrderBtn onClick={saveOrder} disabled={savingOrder}>
+                {savingOrder ? "저장 중..." : "순서 저장"}
+              </SaveOrderBtn>
+              <SmBtn onClick={() => { load(); }}>취소</SmBtn>
+            </ActionBtns>
           )}
         </div>
         {books.length === 0 ? (
