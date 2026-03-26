@@ -31,7 +31,7 @@ const Inner = styled.div`
   height: 4rem;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 2rem;
 `;
 
 const Logo = styled(Link)`
@@ -65,6 +65,7 @@ const RightRow = styled.div`
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  margin-left: auto;
 `;
 
 const ThemeToggle = styled.button`
