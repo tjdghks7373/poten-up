@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import DatePicker from "@/components/ui/DatePicker";
 import {
   BarChart,
   Bar,
@@ -145,18 +146,16 @@ const PresetBtn = styled.button<{ $active?: boolean }>`
   }
 `;
 
-const DateInput = styled.input`
-  padding: 0.375rem 0.625rem;
-  border: 1px solid ${theme.colors.border};
-  border-radius: 0.5rem;
-  font-size: 0.8125rem;
-  font-family: inherit;
-  color: ${theme.colors.fg};
-  background: ${theme.colors.bg};
-  outline: none;
+const DatePickerWrap = styled.div`
+  width: 130px;
 
-  &:focus {
-    border-color: ${theme.colors.brand};
+  .react-datepicker-wrapper {
+    width: 100%;
+  }
+
+  .react-datepicker__input-container input {
+    padding: 0.375rem 0.625rem;
+    font-size: 0.8125rem;
   }
 `;
 
@@ -336,17 +335,13 @@ export default function AnalyticsView() {
           </PresetBtn>
         ))}
         <Separator>|</Separator>
-        <DateInput
-          type="date"
-          value={customFrom}
-          onChange={(e) => setCustomFrom(e.target.value)}
-        />
+        <DatePickerWrap>
+          <DatePicker value={customFrom} onChange={setCustomFrom} placeholder="시작일" />
+        </DatePickerWrap>
         <Separator>~</Separator>
-        <DateInput
-          type="date"
-          value={customTo}
-          onChange={(e) => setCustomTo(e.target.value)}
-        />
+        <DatePickerWrap>
+          <DatePicker value={customTo} onChange={setCustomTo} placeholder="종료일" />
+        </DatePickerWrap>
         <PresetBtn
           $active={preset === "custom"}
           onClick={() => { setPreset("custom"); applyCustom(); }}
