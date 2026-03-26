@@ -5,6 +5,8 @@ import styled from "styled-components";
 import { theme } from "@/lib/theme";
 import DatePicker from "@/components/ui/DatePicker";
 import RichEditor from "@/components/ui/RichEditor";
+import PreviewModal from "@/components/ui/PreviewModal";
+import NewsDetailView from "@/app/news/[slug]/NewsDetailView";
 
 interface NewsRow {
   id: string;
@@ -45,6 +47,7 @@ export default function NewsAdmin() {
   const [form, setForm] = useState<Omit<NewsRow, "id">>(empty);
   const [editId, setEditId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [preview, setPreview] = useState(false);
 
   async function load() {
     const res = await fetch("/api/admin/news");
@@ -106,6 +109,7 @@ export default function NewsAdmin() {
           </Grid>
           <BtnRow>
             <Btn type="submit" disabled={saving}>{saving ? "저장 중..." : editId ? "수정 완료" : "추가"}</Btn>
+            <Btn type="button" $variant="secondary" onClick={() => setPreview(true)}>미리보기</Btn>
             {editId && <Btn type="button" $variant="secondary" onClick={cancelEdit}>취소</Btn>}
           </BtnRow>
         </form>
@@ -128,6 +132,19 @@ export default function NewsAdmin() {
           </Table>
         )}
       </Section>
+
+      {preview && (
+        <PreviewModal onClose={() => setPreview(false)}>
+          <NewsDetailView item={{
+            id: "preview",
+            slug: "preview",
+            title: form.title || "제목 없음",
+            category: form.category || "",
+            date: form.date || "",
+            content: form.content || "",
+          }} />
+        </PreviewModal>
+      )}
     </>
   );
 }
