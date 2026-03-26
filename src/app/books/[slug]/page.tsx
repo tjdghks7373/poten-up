@@ -4,6 +4,8 @@ import BookDetailView from "./BookDetailView";
 
 export const dynamic = "force-dynamic";
 
+const BASE_URL = "https://poten-up.vercel.app";
+
 export default async function BookDetailPage({
   params,
 }: {
@@ -13,5 +15,33 @@ export default async function BookDetailPage({
   const book = await getBookBySlug(slug);
   if (!book) notFound();
 
-  return <BookDetailView book={book} />;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Book",
+    name: book.title,
+    author: {
+      "@type": "Person",
+      name: book.author,
+    },
+    datePublished: book.publishedAt,
+    genre: book.genre,
+    description: book.description.replace(/<[^>]*>/g, ""),
+    image: book.cover || undefined,
+    url: `${BASE_URL}/books/${book.slug}`,
+    publisher: {
+      "@type": "Organization",
+      name: "포텐업 출판사",
+      url: BASE_URL,
+    },
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <BookDetailView book={book} />
+    </>
+  );
 }
