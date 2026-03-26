@@ -20,6 +20,8 @@ const Header = styled.header`
   background: ${theme.colors.bg}e6;
   backdrop-filter: blur(12px);
   border-bottom: 1px solid ${theme.colors.border};
+  transform: translateZ(0);
+  will-change: transform;
 `;
 
 const Inner = styled.div`
