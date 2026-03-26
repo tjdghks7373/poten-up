@@ -6,6 +6,7 @@ export async function GET() {
   const { data, error } = await supabaseAdmin
     .from("books")
     .select("*")
+    .order("sort_order", { ascending: true })
     .order("created_at", { ascending: false });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
