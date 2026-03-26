@@ -1,3 +1,25 @@
+:root {
+  --color-bg: #faf9f7;
+  --color-fg: #1a1a1a;
+  --color-brand: #1e3a5f;
+  --color-brand-light: #2d5a8e;
+  --color-accent: #c8a96e;
+  --color-muted: #6b7280;
+  --color-border: #e5e0d8;
+  --color-white: #ffffff;
+}
+
+[data-theme="dark"] {
+  --color-bg: #111318;
+  --color-fg: #e8e6e1;
+  --color-brand: #5b8fc9;
+  --color-brand-light: #6fa3db;
+  --color-accent: #d4b87a;
+  --color-muted: #9ca3af;
+  --color-border: #2a2d36;
+  --color-white: #1c1f27;
+}
+
 *,
 *::before,
 *::after {
@@ -13,8 +35,8 @@ html {
 }
 
 body {
-  background: #faf9f7;
-  color: #1a1a1a;
+  background: var(--color-bg);
+  color: var(--color-fg);
   font-family: "Pretendard", "맑은 고딕", "Malgun Gothic", "Apple Gothic", sans-serif, system-ui;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import styled from "styled-components";
 import { theme } from "@/lib/theme";
 
@@ -61,6 +61,29 @@ const NavLink = styled(Link)`
   }
 `;
 
+const RightRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+`;
+
+const ThemeToggle = styled.button`
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  color: ${theme.colors.muted};
+  transition: color 0.2s, background 0.2s;
+  font-size: 1rem;
+
+  &:hover {
+    color: ${theme.colors.fg};
+    background: ${theme.colors.border};
+  }
+`;
+
 const MenuButton = styled.button`
   padding: 0.5rem;
   color: ${theme.colors.fg};
@@ -111,6 +134,23 @@ const MobileLink = styled(Link)`
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const [dark, setDark] = useState(false);
+
+  useEffect(() => {
+    setDark(document.documentElement.getAttribute("data-theme") === "dark");
+  }, []);
+
+  function toggleTheme() {
+    const next = !dark;
+    setDark(next);
+    if (next) {
+      document.documentElement.setAttribute("data-theme", "dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.removeAttribute("data-theme");
+      localStorage.setItem("theme", "light");
+    }
+  }
 
   return (
     <Header>
@@ -125,11 +165,16 @@ export default function Navbar() {
           ))}
         </Nav>
 
-        <MenuButton onClick={() => setOpen(!open)} aria-label="메뉴">
-          <Bar />
-          <Bar />
-          <Bar />
-        </MenuButton>
+        <RightRow>
+          <ThemeToggle onClick={toggleTheme} aria-label="다크모드 토글">
+            {dark ? "☀️" : "🌙"}
+          </ThemeToggle>
+          <MenuButton onClick={() => setOpen(!open)} aria-label="메뉴">
+            <Bar />
+            <Bar />
+            <Bar />
+          </MenuButton>
+        </RightRow>
       </Inner>
 
       {open && (
