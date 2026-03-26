@@ -9,6 +9,7 @@ export async function getBooks(): Promise<Book[]> {
   const { data, error } = await supabase
     .from("books")
     .select("*")
+    .order("sort_order", { ascending: true })
     .order("published_at", { ascending: false });
 
   if (error) throw error;

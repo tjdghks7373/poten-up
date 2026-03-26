@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import { theme } from "@/lib/theme";
 import DatePicker from "@/components/ui/DatePicker";
@@ -188,17 +188,63 @@ const Empty = styled.p`
   padding: 1rem 0;
 `;
 
+const DragRow = styled.tr<{ $dragging?: boolean }>`
+  opacity: ${({ $dragging }) => $dragging ? 0.4 : 1};
+  cursor: grab;
+`;
+
+const DragHandle = styled.td`
+  padding: 0.75rem;
+  border-bottom: 1px solid ${theme.colors.border};
+  color: ${theme.colors.muted};
+  font-size: 1rem;
+  cursor: grab;
+  user-select: none;
+  width: 2rem;
+`;
+
+const TitleBtn = styled.button`
+  text-align: left;
+  color: ${theme.colors.fg};
+  font-family: inherit;
+  font-size: 0.875rem;
+  transition: color 0.15s;
+
+  &:hover {
+    color: ${theme.colors.brand};
+    text-decoration: underline;
+  }
+`;
+
+const SaveOrderBtn = styled.button`
+  padding: 0.375rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  font-family: inherit;
+  background: ${theme.colors.accent};
+  color: ${theme.colors.white};
+  transition: opacity 0.15s;
+
+  &:hover { opacity: 0.85; }
+`;
+
 export default function BooksAdmin() {
   const [books, setBooks] = useState<BookRow[]>([]);
   const [form, setForm] = useState<Omit<BookRow, "id">>(empty);
   const [editId, setEditId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [preview, setPreview] = useState(false);
+  const [previewBook, setPreviewBook] = useState<BookRow | null>(null);
+  const [orderChanged, setOrderChanged] = useState(false);
+  const [savingOrder, setSavingOrder] = useState(false);
+  const dragIndex = useRef<number | null>(null);
 
   async function load() {
     const res = await fetch("/api/admin/books");
     const data = await res.json();
     setBooks(Array.isArray(data) ? data : []);
+    setOrderChanged(false);
   }
 
   useEffect(() => { load(); }, []);
@@ -262,6 +308,33 @@ export default function BooksAdmin() {
     await load();
   }
 
+  function onDragStart(index: number) {
+    dragIndex.current = index;
+  }
+
+  function onDragOver(e: React.DragEvent, index: number) {
+    e.preventDefault();
+    if (dragIndex.current === null || dragIndex.current === index) return;
+    const next = [...books];
+    const [moved] = next.splice(dragIndex.current, 1);
+    next.splice(index, 0, moved);
+    dragIndex.current = index;
+    setBooks(next);
+    setOrderChanged(true);
+  }
+
+  async function saveOrder() {
+    setSavingOrder(true);
+    const order = books.map((b, i) => ({ id: b.id, sort_order: i }));
+    await fetch("/api/admin/books/reorder", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ order }),
+    });
+    setSavingOrder(false);
+    setOrderChanged(false);
+  }
+
   return (
     <>
       <PageTitle>도서 관리</PageTitle>
@@ -316,13 +389,21 @@ export default function BooksAdmin() {
       </Section>
 
       <Section>
-        <SectionTitle>도서 목록 ({books.length})</SectionTitle>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.25rem" }}>
+          <SectionTitle style={{ marginBottom: 0 }}>도서 목록 ({books.length})</SectionTitle>
+          {orderChanged && (
+            <SaveOrderBtn onClick={saveOrder} disabled={savingOrder}>
+              {savingOrder ? "저장 중..." : "순서 저장"}
+            </SaveOrderBtn>
+          )}
+        </div>
         {books.length === 0 ? (
           <Empty>등록된 도서가 없습니다.</Empty>
         ) : (
           <Table>
             <thead>
               <tr>
+                <Th style={{ width: "2rem" }}></Th>
                 <Th>제목</Th>
                 <Th>저자</Th>
                 <Th>장르</Th>
@@ -331,9 +412,18 @@ export default function BooksAdmin() {
               </tr>
             </thead>
             <tbody>
-              {books.map((book) => (
-                <tr key={book.id}>
-                  <Td>{book.title}</Td>
+              {books.map((book, i) => (
+                <DragRow
+                  key={book.id}
+                  draggable
+                  onDragStart={() => onDragStart(i)}
+                  onDragOver={(e) => onDragOver(e, i)}
+                  onDragEnd={() => { dragIndex.current = null; }}
+                >
+                  <DragHandle title="드래그하여 순서 변경">⠿</DragHandle>
+                  <Td>
+                    <TitleBtn onClick={() => setPreviewBook(book)}>{book.title}</TitleBtn>
+                  </Td>
                   <Td>{book.author}</Td>
                   <Td>{book.genre}</Td>
                   <Td>{book.published_at}</Td>
@@ -343,7 +433,7 @@ export default function BooksAdmin() {
                       <SmBtn $danger onClick={() => handleDelete(book.id)}>삭제</SmBtn>
                     </ActionBtns>
                   </Td>
-                </tr>
+                </DragRow>
               ))}
             </tbody>
           </Table>
@@ -363,6 +453,23 @@ export default function BooksAdmin() {
             genre: form.genre || "",
             featured: form.featured,
             isNew: form.is_new,
+          }} />
+        </PreviewModal>
+      )}
+
+      {previewBook && (
+        <PreviewModal onClose={() => setPreviewBook(null)}>
+          <BookDetailView book={{
+            id: previewBook.id,
+            slug: previewBook.id,
+            title: previewBook.title,
+            author: previewBook.author,
+            cover: previewBook.cover,
+            description: previewBook.description,
+            publishedAt: previewBook.published_at,
+            genre: previewBook.genre,
+            featured: previewBook.featured,
+            isNew: previewBook.is_new,
           }} />
         </PreviewModal>
       )}
