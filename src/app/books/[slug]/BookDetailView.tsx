@@ -149,16 +149,15 @@ const BuyBtn = styled.a`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.625rem 1.5rem;
+  padding: 0.5rem 1.125rem;
   border-radius: 0.5rem;
-  font-size: 0.9375rem;
-  font-weight: 700;
+  font-size: 0.8125rem;
+  font-weight: 600;
   font-family: inherit;
   letter-spacing: 0.01em;
   background: ${theme.colors.brand};
   color: ${theme.colors.white};
   transition: opacity 0.15s;
-  margin-bottom: 1.5rem;
 
   &:hover {
     opacity: 0.85;
@@ -296,13 +295,12 @@ export default function BookDetailView({ book }: { book: Book }) {
           <AuthorName>{book.author}</AuthorName>
           <PublishedAt>{book.publishedAt} 출판</PublishedAt>
 
-          {book.shopUrl && (
-            <BuyBtn href={book.shopUrl} target="_blank" rel="noopener noreferrer">
-              구매하기
-            </BuyBtn>
-          )}
-
           <ShareRow>
+            {book.shopUrl && (
+              <BuyBtn href={book.shopUrl} target="_blank" rel="noopener noreferrer">
+                구매하기
+              </BuyBtn>
+            )}
             <KakaoBtn onClick={shareKakao}>
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path fillRule="evenodd" clipRule="evenodd" d="M9 1.5C4.857 1.5 1.5 4.186 1.5 7.5c0 2.109 1.29 3.963 3.244 5.1L3.75 15.75l3.476-2.273C7.712 13.579 8.35 13.625 9 13.625c4.143 0 7.5-2.686 7.5-6s-3.357-6.125-7.5-6.125z" fill="#000000"/>
