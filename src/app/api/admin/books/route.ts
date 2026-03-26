@@ -29,6 +29,7 @@ export async function POST(request: NextRequest) {
       genre: body.genre ?? "",
       featured: body.featured ?? false,
       is_new: body.isNew ?? false,
+      shop_url: body.shopUrl ?? "",
     })
     .select()
     .single();

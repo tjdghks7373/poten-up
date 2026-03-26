@@ -9,6 +9,7 @@ export interface Book {
   genre: string;
   featured: boolean;
   isNew: boolean;
+  shopUrl: string;
 }
 
 export interface NewsItem {

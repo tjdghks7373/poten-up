@@ -19,6 +19,7 @@ interface BookRow {
   published_at: string;
   featured: boolean;
   is_new: boolean;
+  shop_url: string;
 }
 
 const empty: Omit<BookRow, "id"> = {
@@ -30,6 +31,7 @@ const empty: Omit<BookRow, "id"> = {
   published_at: "",
   featured: false,
   is_new: false,
+  shop_url: "",
 };
 
 const PageTitle = styled.h1`
@@ -260,6 +262,7 @@ export default function BooksAdmin() {
       published_at: book.published_at,
       featured: book.featured,
       is_new: book.is_new,
+      shop_url: book.shop_url,
     });
   }
 
@@ -281,6 +284,7 @@ export default function BooksAdmin() {
       publishedAt: form.published_at,
       featured: form.featured,
       isNew: form.is_new,
+      shopUrl: form.shop_url,
     };
 
     if (editId) {
@@ -358,6 +362,10 @@ export default function BooksAdmin() {
             <Field>
               <Label>출판일</Label>
               <DatePicker value={form.published_at} onChange={(val) => setForm({ ...form, published_at: val })} />
+            </Field>
+            <Field $full>
+              <Label>구매 링크 (쇼핑몰 URL)</Label>
+              <Input value={form.shop_url} onChange={(e) => setForm({ ...form, shop_url: e.target.value })} placeholder="https://..." />
             </Field>
             <Field $full>
               <Label>표지 이미지</Label>
@@ -456,6 +464,7 @@ export default function BooksAdmin() {
             genre: form.genre || "",
             featured: form.featured,
             isNew: form.is_new,
+            shopUrl: form.shop_url || "",
           }} />
         </PreviewModal>
       )}
@@ -473,6 +482,7 @@ export default function BooksAdmin() {
             genre: previewBook.genre,
             featured: previewBook.featured,
             isNew: previewBook.is_new,
+            shopUrl: previewBook.shop_url,
           }} />
         </PreviewModal>
       )}

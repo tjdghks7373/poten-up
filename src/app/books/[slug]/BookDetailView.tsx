@@ -145,6 +145,26 @@ const KakaoBtn = styled(BaseBtn)`
   }
 `;
 
+const BuyBtn = styled.a`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.625rem 1.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  font-family: inherit;
+  letter-spacing: 0.01em;
+  background: ${theme.colors.brand};
+  color: ${theme.colors.white};
+  transition: opacity 0.15s;
+  margin-bottom: 1.5rem;
+
+  &:hover {
+    opacity: 0.85;
+  }
+`;
+
 const ShareBtn = styled(BaseBtn)<{ $copied?: boolean }>`
   background: ${({ $copied }) => $copied ? theme.colors.brand : theme.colors.white};
   border: 1px solid ${({ $copied }) => $copied ? theme.colors.brand : theme.colors.border};
@@ -275,6 +295,12 @@ export default function BookDetailView({ book }: { book: Book }) {
           <Title>{book.title}</Title>
           <AuthorName>{book.author}</AuthorName>
           <PublishedAt>{book.publishedAt} 출판</PublishedAt>
+
+          {book.shopUrl && (
+            <BuyBtn href={book.shopUrl} target="_blank" rel="noopener noreferrer">
+              구매하기
+            </BuyBtn>
+          )}
 
           <ShareRow>
             <KakaoBtn onClick={shareKakao}>

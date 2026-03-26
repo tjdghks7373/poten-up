@@ -25,6 +25,7 @@ export async function getBooks(): Promise<Book[]> {
     genre: row.genre ?? "",
     featured: row.featured ?? false,
     isNew: row.is_new ?? false,
+    shopUrl: row.shop_url ?? "",
   }));
 }
 
@@ -48,6 +49,7 @@ export async function getBookBySlug(slug: string): Promise<Book | null> {
     genre: data.genre ?? "",
     featured: data.featured ?? false,
     isNew: data.is_new ?? false,
+    shopUrl: data.shop_url ?? "",
   };
 }
 
