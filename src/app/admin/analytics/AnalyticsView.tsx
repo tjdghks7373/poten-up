@@ -194,7 +194,7 @@ export default function AnalyticsView({ summary, topBooks, topNews, daily }: Pro
               cx="50%"
               cy="50%"
               outerRadius={height / 3}
-              label={({ name, percent }: { name: string; percent?: number }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
+              label={(props) => `${props.name ?? ""} ${(((props.percent as number) ?? 0) * 100).toFixed(0)}%`}
             >
             </Pie>
             <Tooltip />
