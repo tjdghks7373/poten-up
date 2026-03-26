@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import styled from "styled-components";
 import { theme } from "@/lib/theme";
@@ -51,13 +52,30 @@ const Nav = styled.nav`
   }
 `;
 
-const NavLink = styled(Link)`
-  font-size: 0.875rem;
-  color: ${theme.colors.muted};
+const NavLink = styled(Link)<{ $active?: boolean }>`
+  font-size: 0.9rem;
+  font-weight: ${({ $active }) => $active ? "700" : "500"};
+  color: ${({ $active }) => $active ? theme.colors.brand : theme.colors.fg};
+  position: relative;
   transition: color 0.2s;
+  padding-bottom: 2px;
+
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: ${theme.colors.brand};
+    border-radius: 1px;
+    opacity: ${({ $active }) => $active ? "1" : "0"};
+    transition: opacity 0.2s;
+  }
 
   &:hover {
-    color: ${theme.colors.fg};
+    color: ${theme.colors.brand};
+    &::after { opacity: 1; }
   }
 `;
 
@@ -116,11 +134,12 @@ const MobileMenu = styled.div`
   }
 `;
 
-const MobileLink = styled(Link)`
+const MobileLink = styled(Link)<{ $active?: boolean }>`
   display: block;
   padding: 0.75rem 0;
-  font-size: 0.875rem;
-  color: ${theme.colors.muted};
+  font-size: 0.9rem;
+  font-weight: ${({ $active }) => $active ? "700" : "500"};
+  color: ${({ $active }) => $active ? theme.colors.brand : theme.colors.fg};
   border-bottom: 1px solid ${theme.colors.border};
   transition: color 0.2s;
 
@@ -129,13 +148,14 @@ const MobileLink = styled(Link)`
   }
 
   &:hover {
-    color: ${theme.colors.fg};
+    color: ${theme.colors.brand};
   }
 `;
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [dark, setDark] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     setDark(document.documentElement.getAttribute("data-theme") === "dark");
@@ -160,7 +180,7 @@ export default function Navbar() {
 
         <Nav>
           {links.map((l) => (
-            <NavLink key={l.href} href={l.href}>
+            <NavLink key={l.href} href={l.href} $active={pathname.startsWith(l.href)}>
               {l.label}
             </NavLink>
           ))}
@@ -181,7 +201,7 @@ export default function Navbar() {
       {open && (
         <MobileMenu>
           {links.map((l) => (
-            <MobileLink key={l.href} href={l.href} onClick={() => setOpen(false)}>
+            <MobileLink key={l.href} href={l.href} $active={pathname.startsWith(l.href)} onClick={() => setOpen(false)}>
               {l.label}
             </MobileLink>
           ))}
