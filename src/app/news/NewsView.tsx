@@ -1,9 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import styled from "styled-components";
 import { theme } from "@/lib/theme";
 import { NewsItem } from "@/types";
+
+const PAGE_SIZE = 10;
 
 const Wrapper = styled.div`
   padding-top: 6rem;
@@ -87,6 +90,38 @@ const Date = styled.span`
   margin-left: 1rem;
 `;
 
+const Pagination = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  margin-top: 2.5rem;
+`;
+
+const PageBtn = styled.button<{ $active?: boolean }>`
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-family: inherit;
+  font-weight: ${({ $active }) => $active ? "700" : "400"};
+  background: ${({ $active }) => $active ? theme.colors.brand : "transparent"};
+  color: ${({ $active }) => $active ? theme.colors.white : theme.colors.fg};
+  border: 1px solid ${({ $active }) => $active ? theme.colors.brand : theme.colors.border};
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover:not(:disabled) {
+    border-color: ${theme.colors.brand};
+    color: ${({ $active }) => $active ? theme.colors.white : theme.colors.brand};
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+`;
+
 function track(type: string, slug: string, title: string) {
   fetch("/api/track", {
     method: "POST",
@@ -96,13 +131,17 @@ function track(type: string, slug: string, title: string) {
 }
 
 export default function NewsView({ newsList }: { newsList: NewsItem[] }) {
+  const [page, setPage] = useState(1);
+  const totalPages = Math.ceil(newsList.length / PAGE_SIZE);
+  const paged = newsList.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
   return (
     <Wrapper>
       <PageTitle>뉴스 / 공지</PageTitle>
       <Desc>포텐업 출판사의 최신 소식을 확인하세요.</Desc>
 
       <List>
-        {newsList.map((item) => (
+        {paged.map((item) => (
           <NewsLink key={item.id} href={`/news/${item.slug}`} onClick={() => track("news", item.slug, item.title)}>
             <Left>
               <CategoryBadge>{item.category}</CategoryBadge>
@@ -112,6 +151,16 @@ export default function NewsView({ newsList }: { newsList: NewsItem[] }) {
           </NewsLink>
         ))}
       </List>
+
+      {totalPages > 1 && (
+        <Pagination>
+          <PageBtn onClick={() => setPage(page - 1)} disabled={page === 1}>‹</PageBtn>
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+            <PageBtn key={p} $active={p === page} onClick={() => setPage(p)}>{p}</PageBtn>
+          ))}
+          <PageBtn onClick={() => setPage(page + 1)} disabled={page === totalPages}>›</PageBtn>
+        </Pagination>
+      )}
     </Wrapper>
   );
 }

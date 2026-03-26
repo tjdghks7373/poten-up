@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
+
+const PAGE_SIZE = 10;
 import Image from "next/image";
 import Link from "next/link";
 import styled from "styled-components";
@@ -98,6 +100,38 @@ const Empty = styled.p`
   padding: 2rem 0;
 `;
 
+const Pagination = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  margin-top: 2.5rem;
+`;
+
+const PageBtn = styled.button<{ $active?: boolean }>`
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-family: inherit;
+  font-weight: ${({ $active }) => $active ? "700" : "400"};
+  background: ${({ $active }) => $active ? theme.colors.brand : "transparent"};
+  color: ${({ $active }) => $active ? theme.colors.white : theme.colors.fg};
+  border: 1px solid ${({ $active }) => $active ? theme.colors.brand : theme.colors.border};
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover:not(:disabled) {
+    border-color: ${theme.colors.brand};
+    color: ${({ $active }) => $active ? theme.colors.white : theme.colors.brand};
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+`;
+
 const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -190,6 +224,7 @@ function track(type: string, slug: string, title: string) {
 export default function BooksView({ books }: { books: Book[] }) {
   const [query, setQuery] = useState("");
   const [genre, setGenre] = useState("");
+  const [page, setPage] = useState(1);
 
   const genres = useMemo(() => {
     const set = new Set(books.map((b) => b.genre).filter(Boolean));
@@ -205,6 +240,15 @@ export default function BooksView({ books }: { books: Book[] }) {
     });
   }, [books, query, genre]);
 
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  function handleFilterChange(newQuery: string, newGenre: string) {
+    setQuery(newQuery);
+    setGenre(newGenre);
+    setPage(1);
+  }
+
   return (
     <Wrapper>
       <PageTitle>도서 목록</PageTitle>
@@ -214,10 +258,10 @@ export default function BooksView({ books }: { books: Book[] }) {
         <SearchInput
           placeholder="제목 또는 저자 검색..."
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => handleFilterChange(e.target.value, genre)}
         />
         <SelectWrapper>
-          <GenreSelect value={genre} onChange={(e) => setGenre(e.target.value)}>
+          <GenreSelect value={genre} onChange={(e) => handleFilterChange(query, e.target.value)}>
             <option value="">전체 장르</option>
             {genres.map((g) => (
               <option key={g} value={g}>{g}</option>
@@ -230,7 +274,7 @@ export default function BooksView({ books }: { books: Book[] }) {
         <Empty>검색 결과가 없습니다.</Empty>
       ) : (
         <Grid>
-          {filtered.map((book) => (
+          {paged.map((book) => (
             <BookCard key={book.id} href={`/books/${book.slug}`} onClick={() => track("book", book.slug, book.title)}>
               <CoverWrapper>
                 {book.cover ? (
@@ -245,6 +289,16 @@ export default function BooksView({ books }: { books: Book[] }) {
             </BookCard>
           ))}
         </Grid>
+      )}
+
+      {totalPages > 1 && (
+        <Pagination>
+          <PageBtn onClick={() => setPage(page - 1)} disabled={page === 1}>‹</PageBtn>
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+            <PageBtn key={p} $active={p === page} onClick={() => setPage(p)}>{p}</PageBtn>
+          ))}
+          <PageBtn onClick={() => setPage(page + 1)} disabled={page === totalPages}>›</PageBtn>
+        </Pagination>
       )}
     </Wrapper>
   );
