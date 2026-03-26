@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   BarChart,
   Bar,
@@ -121,6 +121,50 @@ const CloseBtn = styled.button`
   }
 `;
 
+const FilterBar = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+`;
+
+const PresetBtn = styled.button<{ $active?: boolean }>`
+  padding: 0.375rem 0.875rem;
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  font-family: inherit;
+  background: ${({ $active }) => $active ? theme.colors.brand : theme.colors.white};
+  color: ${({ $active }) => $active ? theme.colors.white : theme.colors.fg};
+  border: 1px solid ${({ $active }) => $active ? theme.colors.brand : theme.colors.border};
+  transition: all 0.15s;
+
+  &:hover {
+    opacity: 0.85;
+  }
+`;
+
+const DateInput = styled.input`
+  padding: 0.375rem 0.625rem;
+  border: 1px solid ${theme.colors.border};
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  font-family: inherit;
+  color: ${theme.colors.fg};
+  background: ${theme.colors.bg};
+  outline: none;
+
+  &:focus {
+    border-color: ${theme.colors.brand};
+  }
+`;
+
+const Separator = styled.span`
+  color: ${theme.colors.muted};
+  font-size: 0.8125rem;
+`;
+
 const COLORS = ["#6B8CBA", "#7BB5A0", "#C4A882", "#A98BBB", "#7BACC4", "#B5896E", "#8BABB5", "#B5A67B", "#9BB57B", "#B57B8B"];
 const TYPE_LABELS: Record<string, string> = {
   book: "도서",
@@ -130,6 +174,8 @@ const TYPE_LABELS: Record<string, string> = {
   kakao_share: "카카오 공유",
   link_copy: "링크 복사",
 };
+
+type Preset = "today" | "7d" | "30d" | "all" | "custom";
 
 interface TopItem {
   slug: string;
@@ -147,7 +193,7 @@ interface TypeCount {
   count: number;
 }
 
-interface Props {
+interface AnalyticsData {
   summary: TypeCount[];
   topBooks: TopItem[];
   topNews: TopItem[];
@@ -159,7 +205,7 @@ interface Props {
 type ChartKey = "daily" | "pie" | "books" | "news" | "kakao" | "link";
 
 const CHART_TITLES: Record<ChartKey, string> = {
-  daily: "일별 방문 추이 (최근 14일)",
+  daily: "일별 방문 추이",
   pie: "섹션별 클릭 비율",
   books: "도서 TOP 10",
   news: "뉴스 TOP 10",
@@ -167,8 +213,58 @@ const CHART_TITLES: Record<ChartKey, string> = {
   link: "링크 복사 TOP 10",
 };
 
-export default function AnalyticsView({ summary, topBooks, topNews, daily, topKakao, topLink }: Props) {
+function getPresetDates(preset: Preset): { from: string; to: string } | null {
+  if (preset === "all") return null;
+  const today = new Date();
+  const to = today.toISOString().slice(0, 10);
+  if (preset === "today") return { from: to, to };
+  const from = new Date(today);
+  if (preset === "7d") from.setDate(from.getDate() - 6);
+  if (preset === "30d") from.setDate(from.getDate() - 29);
+  return { from: from.toISOString().slice(0, 10), to };
+}
+
+export default function AnalyticsView() {
+  const [preset, setPreset] = useState<Preset>("30d");
+  const [customFrom, setCustomFrom] = useState("");
+  const [customTo, setCustomTo] = useState("");
+  const [data, setData] = useState<AnalyticsData | null>(null);
+  const [loading, setLoading] = useState(false);
   const [expanded, setExpanded] = useState<ChartKey | null>(null);
+
+  const fetchData = useCallback(async (p: Preset, cf: string, ct: string) => {
+    setLoading(true);
+    const params = new URLSearchParams();
+    if (p === "custom") {
+      if (cf) params.set("from", cf);
+      if (ct) params.set("to", ct);
+    } else {
+      const dates = getPresetDates(p);
+      if (dates) {
+        params.set("from", dates.from);
+        params.set("to", dates.to);
+      }
+    }
+    const res = await fetch(`/api/admin/analytics?${params}`);
+    const json = await res.json();
+    setData(json);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    fetchData(preset, customFrom, customTo);
+  }, [preset, fetchData]);
+
+  function applyCustom() {
+    fetchData("custom", customFrom, customTo);
+  }
+
+  const summary = data?.summary ?? [];
+  const topBooks = data?.topBooks ?? [];
+  const topNews = data?.topNews ?? [];
+  const daily = data?.daily ?? [];
+  const topKakao = data?.topKakao ?? [];
+  const topLink = data?.topLink ?? [];
 
   const total = summary.reduce((acc, s) => acc + s.count, 0);
   const pieData = summary.map((s) => ({
@@ -201,7 +297,7 @@ export default function AnalyticsView({ summary, topBooks, topNews, daily, topKa
               cx="50%"
               cy="50%"
               outerRadius={height / 3}
-              label={(props) => `${props.name ?? ""} ${(((props.percent as number) ?? 0) * 100).toFixed(0)}%`}
+              label={(props: { name?: string; percent?: number }) => `${props.name ?? ""} ${(((props.percent as number) ?? 0) * 100).toFixed(0)}%`}
             >
             </Pie>
             <Tooltip />
@@ -229,54 +325,86 @@ export default function AnalyticsView({ summary, topBooks, topNews, daily, topKa
 
   return (
     <>
-      <h1 style={{ fontSize: "1.5rem", fontWeight: 700, marginBottom: "1.5rem", color: theme.colors.fg }}>
+      <h1 style={{ fontSize: "1.5rem", fontWeight: 700, marginBottom: "1.25rem", color: theme.colors.fg }}>
         통계
       </h1>
 
-      <SummaryGrid>
-        <SummaryCard>
-          <StatNumber>{total.toLocaleString()}</StatNumber>
-          <StatLabel>전체 클릭 수</StatLabel>
-        </SummaryCard>
-        {summary.map((s) => (
-          <SummaryCard key={s.type}>
-            <StatNumber>{s.count.toLocaleString()}</StatNumber>
-            <StatLabel>{TYPE_LABELS[s.type] ?? s.type} 클릭</StatLabel>
-          </SummaryCard>
+      <FilterBar>
+        {(["today", "7d", "30d", "all"] as Preset[]).map((p) => (
+          <PresetBtn key={p} $active={preset === p && preset !== "custom"} onClick={() => setPreset(p)}>
+            {p === "today" ? "오늘" : p === "7d" ? "7일" : p === "30d" ? "30일" : "전체"}
+          </PresetBtn>
         ))}
-      </SummaryGrid>
+        <Separator>|</Separator>
+        <DateInput
+          type="date"
+          value={customFrom}
+          onChange={(e) => setCustomFrom(e.target.value)}
+        />
+        <Separator>~</Separator>
+        <DateInput
+          type="date"
+          value={customTo}
+          onChange={(e) => setCustomTo(e.target.value)}
+        />
+        <PresetBtn
+          $active={preset === "custom"}
+          onClick={() => { setPreset("custom"); applyCustom(); }}
+        >
+          조회
+        </PresetBtn>
+      </FilterBar>
 
-      <Grid>
-        <Card style={{ gridColumn: "1 / -1" }} onClick={() => setExpanded("daily")}>
-          <CardTitle>{CHART_TITLES.daily}</CardTitle>
-          {renderChart("daily", 220)}
-        </Card>
+      {loading ? (
+        <p style={{ color: theme.colors.muted, fontSize: "0.875rem" }}>불러오는 중...</p>
+      ) : (
+        <>
+          <SummaryGrid>
+            <SummaryCard>
+              <StatNumber>{total.toLocaleString()}</StatNumber>
+              <StatLabel>전체 클릭 수</StatLabel>
+            </SummaryCard>
+            {summary.map((s) => (
+              <SummaryCard key={s.type}>
+                <StatNumber>{s.count.toLocaleString()}</StatNumber>
+                <StatLabel>{TYPE_LABELS[s.type] ?? s.type} 클릭</StatLabel>
+              </SummaryCard>
+            ))}
+          </SummaryGrid>
 
-        <Card onClick={() => setExpanded("pie")}>
-          <CardTitle>{CHART_TITLES.pie}</CardTitle>
-          {renderChart("pie", 220)}
-        </Card>
+          <Grid>
+            <Card style={{ gridColumn: "1 / -1" }} onClick={() => setExpanded("daily")}>
+              <CardTitle>{CHART_TITLES.daily}</CardTitle>
+              {renderChart("daily", 220)}
+            </Card>
 
-        <Card onClick={() => setExpanded("books")}>
-          <CardTitle>{CHART_TITLES.books}</CardTitle>
-          {renderChart("books", 220)}
-        </Card>
+            <Card onClick={() => setExpanded("pie")}>
+              <CardTitle>{CHART_TITLES.pie}</CardTitle>
+              {renderChart("pie", 220)}
+            </Card>
 
-        <Card onClick={() => setExpanded("kakao")}>
-          <CardTitle>{CHART_TITLES.kakao}</CardTitle>
-          {renderChart("kakao", 220)}
-        </Card>
+            <Card onClick={() => setExpanded("books")}>
+              <CardTitle>{CHART_TITLES.books}</CardTitle>
+              {renderChart("books", 220)}
+            </Card>
 
-        <Card onClick={() => setExpanded("link")}>
-          <CardTitle>{CHART_TITLES.link}</CardTitle>
-          {renderChart("link", 220)}
-        </Card>
+            <Card onClick={() => setExpanded("kakao")}>
+              <CardTitle>{CHART_TITLES.kakao}</CardTitle>
+              {renderChart("kakao", 220)}
+            </Card>
 
-        <Card onClick={() => setExpanded("news")}>
-          <CardTitle>{CHART_TITLES.news}</CardTitle>
-          {renderChart("news", 220)}
-        </Card>
-      </Grid>
+            <Card onClick={() => setExpanded("link")}>
+              <CardTitle>{CHART_TITLES.link}</CardTitle>
+              {renderChart("link", 220)}
+            </Card>
+
+            <Card onClick={() => setExpanded("news")}>
+              <CardTitle>{CHART_TITLES.news}</CardTitle>
+              {renderChart("news", 220)}
+            </Card>
+          </Grid>
+        </>
+      )}
 
       {expanded && (
         <Overlay onClick={() => setExpanded(null)}>
