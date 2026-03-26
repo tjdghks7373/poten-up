@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { getBooks, getNews } from "@/lib/db";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 const BASE_URL = "https://poten-up.vercel.app";
 
