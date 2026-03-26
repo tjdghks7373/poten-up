@@ -1,10 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
+import Script from "next/script";
 import styled from "styled-components";
 import { theme } from "@/lib/theme";
 import { Book } from "@/types";
+
+declare global {
+  interface Window {
+    Kakao: {
+      init: (key: string) => void;
+      isInitialized: () => boolean;
+      Share: {
+        sendDefault: (options: object) => void;
+      };
+    };
+  }
+}
 
 const Wrapper = styled.div`
   padding-top: 6rem;
@@ -105,6 +118,26 @@ const ShareRow = styled.div`
   margin-bottom: 2rem;
 `;
 
+const KakaoBtn = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.875rem;
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  font-family: inherit;
+  border: 1px solid #f9e000;
+  background: #f9e000;
+  color: #3c1e1e;
+  cursor: pointer;
+  transition: opacity 0.15s;
+
+  &:hover {
+    opacity: 0.85;
+  }
+`;
+
 const ShareBtn = styled.button<{ $copied?: boolean }>`
   display: flex;
   align-items: center;
@@ -174,6 +207,12 @@ const Description = styled.div`
 export default function BookDetailView({ book }: { book: Book }) {
   const [copied, setCopied] = useState(false);
 
+  useEffect(() => {
+    if (window.Kakao && !window.Kakao.isInitialized()) {
+      window.Kakao.init(process.env.NEXT_PUBLIC_KAKAO_APP_KEY!);
+    }
+  }, []);
+
   function copyLink() {
     navigator.clipboard.writeText(window.location.href).then(() => {
       setCopied(true);
@@ -181,7 +220,34 @@ export default function BookDetailView({ book }: { book: Book }) {
     });
   }
 
+  function shareKakao() {
+    if (!window.Kakao?.isInitialized()) return;
+    window.Kakao.Share.sendDefault({
+      objectType: "feed",
+      content: {
+        title: book.title,
+        description: `${book.author} 저 | ${book.genre}`,
+        imageUrl: book.cover || undefined,
+        link: {
+          mobileWebUrl: window.location.href,
+          webUrl: window.location.href,
+        },
+      },
+    });
+  }
+
   return (
+    <>
+      <Script
+        src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js"
+        integrity="sha384-TiCUE00h649CAMonG018J2ujOgDKW/kVWlChEuu4jK2vxfAAD0eZxzCKakxg55G4"
+        crossOrigin="anonymous"
+        onLoad={() => {
+          if (!window.Kakao.isInitialized()) {
+            window.Kakao.init(process.env.NEXT_PUBLIC_KAKAO_APP_KEY!);
+          }
+        }}
+      />
     <Wrapper>
       <Layout>
         <CoverCol>
@@ -206,6 +272,9 @@ export default function BookDetailView({ book }: { book: Book }) {
           <PublishedAt>{book.publishedAt} 출판</PublishedAt>
 
           <ShareRow>
+            <KakaoBtn onClick={shareKakao}>
+              💬 카카오톡 공유
+            </KakaoBtn>
             <ShareBtn onClick={copyLink} $copied={copied}>
               {copied ? "✓ 복사됨" : "🔗 링크 복사"}
             </ShareBtn>
@@ -217,5 +286,6 @@ export default function BookDetailView({ book }: { book: Book }) {
         </Info>
       </Layout>
     </Wrapper>
+    </>
   );
 }
