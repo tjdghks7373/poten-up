@@ -7,6 +7,9 @@ import StyledComponentsRegistry from "@/lib/registry";
 export const metadata: Metadata = {
   title: "포텐업 출판사",
   description: "포텐업 출판사 공식 홈페이지",
+  verification: {
+    google: "ln8cXC2cxfZXikpa4sSsUZs7S0zxdsUs5FxHkbkheUY",
+  },
   openGraph: {
     title: "포텐업 출판사",
     description: "포텐업 출판사 공식 홈페이지",
