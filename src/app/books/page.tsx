@@ -1,7 +1,7 @@
 import { getBooks } from "@/lib/db";
 import BooksView from "./BooksView";
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 export default async function BooksPage() {
   const books = await getBooks().catch(() => []);
