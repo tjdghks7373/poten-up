@@ -121,7 +121,7 @@ const CloseBtn = styled.button`
   }
 `;
 
-const COLORS = ["#4F46E5", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#EC4899", "#06B6D4", "#F97316", "#14B8A6", "#6366F1"];
+const COLORS = ["#6B8CBA", "#7BB5A0", "#C4A882", "#A98BBB", "#7BACC4", "#B5896E", "#8BABB5", "#B5A67B", "#9BB57B", "#B57B8B"];
 const TYPE_LABELS: Record<string, string> = {
   book: "도서",
   news: "뉴스",
