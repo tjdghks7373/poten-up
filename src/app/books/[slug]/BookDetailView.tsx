@@ -46,7 +46,7 @@ const CoverWrapper = styled.div`
   border-radius: 0.5rem;
   overflow: hidden;
   background: ${theme.colors.border};
-  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 `;
 
 const NoCover = styled.div`
@@ -107,15 +107,40 @@ const Description = styled.div`
     font-size: 1rem;
   }
 
-  p { margin: 0 0 0.75rem; }
-  p:last-child { margin-bottom: 0; }
-  h2 { font-size: 1.125rem; font-weight: 700; margin: 1rem 0 0.5rem; color: ${theme.colors.brand}; }
-  h3 { font-size: 1rem; font-weight: 600; margin: 0.75rem 0 0.375rem; }
-  ul, ol { padding-left: 1.5rem; margin: 0.5rem 0; }
-  li { margin-bottom: 0.25rem; }
-  strong { font-weight: 700; }
-  em { font-style: italic; }
-  u { text-decoration: underline; }
+  p {
+    margin: 0 0 0.75rem;
+  }
+  p:last-child {
+    margin-bottom: 0;
+  }
+  h2 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    margin: 1rem 0 0.5rem;
+    color: ${theme.colors.brand};
+  }
+  h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0.75rem 0 0.375rem;
+  }
+  ul,
+  ol {
+    padding-left: 1.5rem;
+    margin: 0.5rem 0;
+  }
+  li {
+    margin-bottom: 0.25rem;
+  }
+  strong {
+    font-weight: 700;
+  }
+  em {
+    font-style: italic;
+  }
+  u {
+    text-decoration: underline;
+  }
 `;
 
 export default function BookDetailView({ book }: { book: Book }) {
@@ -125,7 +150,12 @@ export default function BookDetailView({ book }: { book: Book }) {
         <CoverCol>
           <CoverWrapper>
             {book.cover ? (
-              <Image src={book.cover} alt={book.title} fill style={{ objectFit: "cover" }} />
+              <Image
+                src={book.cover}
+                alt={book.title}
+                fill
+                style={{ objectFit: "cover" }}
+              />
             ) : (
               <NoCover>표지 없음</NoCover>
             )}

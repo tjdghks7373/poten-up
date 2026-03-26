@@ -1,17 +1,8 @@
 import { notFound } from "next/navigation";
-import { getBooks, getBookBySlug } from "@/lib/notion";
+import { getBookBySlug } from "@/lib/notion";
 import BookDetailView from "./BookDetailView";
 
-export const revalidate = 3600;
-
-export async function generateStaticParams() {
-  try {
-    const books = await getBooks();
-    return books.map((b) => ({ slug: b.slug }));
-  } catch {
-    return [];
-  }
-}
+export const dynamic = "force-dynamic";
 
 export default async function BookDetailPage({
   params,
