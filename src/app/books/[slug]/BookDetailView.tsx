@@ -114,44 +114,41 @@ const Divider = styled.div`
 
 const ShareRow = styled.div`
   display: flex;
-  gap: 0.5rem;
+  gap: 0.625rem;
   margin-bottom: 2rem;
 `;
 
-const KakaoBtn = styled.button`
-  display: flex;
+const BaseBtn = styled.button`
+  display: inline-flex;
   align-items: center;
-  gap: 0.375rem;
-  padding: 0.375rem 0.875rem;
+  justify-content: center;
+  padding: 0.5rem 1.125rem;
   border-radius: 0.5rem;
   font-size: 0.8125rem;
-  font-weight: 500;
+  font-weight: 600;
   font-family: inherit;
-  border: 1px solid #f9e000;
-  background: #f9e000;
-  color: #3c1e1e;
+  letter-spacing: 0.01em;
   cursor: pointer;
-  transition: opacity 0.15s;
+  transition: all 0.15s;
+`;
+
+const KakaoBtn = styled(BaseBtn)`
+  background: #fee500;
+  border: 1px solid #fee500;
+  color: rgba(0, 0, 0, 0.85);
+  border-radius: 12px;
+  gap: 0.5rem;
 
   &:hover {
-    opacity: 0.85;
+    background: #fada00;
+    border-color: #fada00;
   }
 `;
 
-const ShareBtn = styled.button<{ $copied?: boolean }>`
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.375rem 0.875rem;
-  border-radius: 0.5rem;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  font-family: inherit;
-  border: 1px solid ${theme.colors.border};
+const ShareBtn = styled(BaseBtn)<{ $copied?: boolean }>`
   background: ${({ $copied }) => $copied ? theme.colors.brand : theme.colors.white};
+  border: 1px solid ${({ $copied }) => $copied ? theme.colors.brand : theme.colors.border};
   color: ${({ $copied }) => $copied ? theme.colors.white : theme.colors.fg};
-  cursor: pointer;
-  transition: all 0.15s;
 
   &:hover {
     border-color: ${theme.colors.brand};
@@ -271,10 +268,13 @@ export default function BookDetailView({ book }: { book: Book }) {
 
           <ShareRow>
             <KakaoBtn onClick={shareKakao}>
-              💬 카카오톡 공유
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fillRule="evenodd" clipRule="evenodd" d="M9 1.5C4.857 1.5 1.5 4.186 1.5 7.5c0 2.109 1.29 3.963 3.244 5.1L3.75 15.75l3.476-2.273C7.712 13.579 8.35 13.625 9 13.625c4.143 0 7.5-2.686 7.5-6s-3.357-6.125-7.5-6.125z" fill="#000000"/>
+              </svg>
+              카카오톡 공유
             </KakaoBtn>
             <ShareBtn onClick={copyLink} $copied={copied}>
-              {copied ? "✓ 복사됨" : "🔗 링크 복사"}
+              {copied ? "✓ 링크 복사됨" : "링크 복사"}
             </ShareBtn>
           </ShareRow>
 
