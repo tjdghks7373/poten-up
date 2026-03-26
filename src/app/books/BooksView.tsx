@@ -113,6 +113,14 @@ const Author = styled.p`
   color: ${theme.colors.muted};
 `;
 
+function track(type: string, slug: string, title: string) {
+  fetch("/api/track", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ type, slug, title }),
+  }).catch(() => {});
+}
+
 export default function BooksView({ books }: { books: Book[] }) {
   return (
     <Wrapper>
@@ -121,7 +129,7 @@ export default function BooksView({ books }: { books: Book[] }) {
 
       <Grid>
         {books.map((book) => (
-          <BookCard key={book.id} href={`/books/${book.slug}`}>
+          <BookCard key={book.id} href={`/books/${book.slug}`} onClick={() => track("book", book.slug, book.title)}>
             <CoverWrapper>
               {book.cover ? (
                 <CoverImage src={book.cover} alt={book.title} fill />

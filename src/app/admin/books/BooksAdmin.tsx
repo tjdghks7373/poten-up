@@ -195,7 +195,7 @@ export default function BooksAdmin() {
   async function load() {
     const res = await fetch("/api/admin/books");
     const data = await res.json();
-    setBooks(data);
+    setBooks(Array.isArray(data) ? data : []);
   }
 
   useEffect(() => { load(); }, []);

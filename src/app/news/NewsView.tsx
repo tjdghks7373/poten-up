@@ -87,6 +87,14 @@ const Date = styled.span`
   margin-left: 1rem;
 `;
 
+function track(type: string, slug: string, title: string) {
+  fetch("/api/track", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ type, slug, title }),
+  }).catch(() => {});
+}
+
 export default function NewsView({ newsList }: { newsList: NewsItem[] }) {
   return (
     <Wrapper>
@@ -95,7 +103,7 @@ export default function NewsView({ newsList }: { newsList: NewsItem[] }) {
 
       <List>
         {newsList.map((item) => (
-          <NewsLink key={item.id} href={`/news/${item.slug}`}>
+          <NewsLink key={item.id} href={`/news/${item.slug}`} onClick={() => track("news", item.slug, item.title)}>
             <Left>
               <CategoryBadge>{item.category}</CategoryBadge>
               <Title>{item.title}</Title>

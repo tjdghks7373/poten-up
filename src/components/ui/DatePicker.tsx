@@ -111,14 +111,26 @@ interface Props {
   placeholder?: string;
 }
 
+function parseLocalDate(val: string): Date {
+  const [y, m, d] = val.split("-").map(Number);
+  return new Date(y, (m as number) - 1, d);
+}
+
+function formatLocalDate(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
 export default function DatePicker({ value, onChange, placeholder }: Props) {
-  const selected = value ? new Date(value) : null;
+  const selected = value ? parseLocalDate(value) : null;
 
   return (
     <Wrapper>
       <ReactDatePicker
         selected={selected}
-        onChange={(date: Date | null) => onChange(date ? date.toISOString().slice(0, 10) : "")}
+        onChange={(date: Date | null) => onChange(date ? formatLocalDate(date) : "")}
         dateFormat="yyyy-MM-dd"
         locale="ko"
         placeholderText={placeholder ?? "날짜 선택"}

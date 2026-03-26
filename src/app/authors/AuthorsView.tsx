@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Image from "next/image";
 import styled from "styled-components";
 import { theme } from "@/lib/theme";
@@ -117,6 +118,14 @@ const BookTag = styled.span`
 `;
 
 export default function AuthorsView({ authors }: { authors: Author[] }) {
+  useEffect(() => {
+    fetch("/api/track", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "author", slug: null, title: "작가 소개" }),
+    }).catch(() => {});
+  }, []);
+
   return (
     <Wrapper>
       <PageTitle>작가 소개</PageTitle>

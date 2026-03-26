@@ -9,6 +9,7 @@ const navItems = [
   { href: "/admin/books", label: "도서" },
   { href: "/admin/news", label: "뉴스/공지" },
   { href: "/admin/authors", label: "작가" },
+  { href: "/admin/analytics", label: "통계" },
 ];
 
 const Shell = styled.div`
