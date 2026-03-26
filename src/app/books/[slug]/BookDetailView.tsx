@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import styled from "styled-components";
 import { theme } from "@/lib/theme";
@@ -98,6 +99,33 @@ const Divider = styled.div`
   margin-bottom: 2rem;
 `;
 
+const ShareRow = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+`;
+
+const ShareBtn = styled.button<{ $copied?: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.875rem;
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  font-family: inherit;
+  border: 1px solid ${theme.colors.border};
+  background: ${({ $copied }) => $copied ? theme.colors.brand : theme.colors.white};
+  color: ${({ $copied }) => $copied ? theme.colors.white : theme.colors.fg};
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    border-color: ${theme.colors.brand};
+    color: ${({ $copied }) => $copied ? theme.colors.white : theme.colors.brand};
+  }
+`;
+
 const Description = styled.div`
   color: ${theme.colors.fg};
   line-height: 1.7;
@@ -144,6 +172,15 @@ const Description = styled.div`
 `;
 
 export default function BookDetailView({ book }: { book: Book }) {
+  const [copied, setCopied] = useState(false);
+
+  function copyLink() {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
+
   return (
     <Wrapper>
       <Layout>
@@ -167,6 +204,12 @@ export default function BookDetailView({ book }: { book: Book }) {
           <Title>{book.title}</Title>
           <AuthorName>{book.author}</AuthorName>
           <PublishedAt>{book.publishedAt} 출판</PublishedAt>
+
+          <ShareRow>
+            <ShareBtn onClick={copyLink} $copied={copied}>
+              {copied ? "✓ 복사됨" : "🔗 링크 복사"}
+            </ShareBtn>
+          </ShareRow>
 
           <Divider />
 
