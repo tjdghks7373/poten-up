@@ -210,15 +210,25 @@ export default function BookDetailView({ book }: { book: Book }) {
     }
   }, []);
 
+  function track(type: string) {
+    fetch("/api/track", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type, slug: book.slug, title: book.title }),
+    }).catch(() => {});
+  }
+
   function copyLink() {
     navigator.clipboard.writeText(window.location.href).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+      track("link_copy");
     });
   }
 
   function shareKakao() {
     if (!window.Kakao?.isInitialized()) return;
+    track("kakao_share");
     window.Kakao.Share.sendDefault({
       objectType: "feed",
       content: {

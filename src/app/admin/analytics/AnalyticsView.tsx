@@ -126,6 +126,8 @@ const TYPE_LABELS: Record<string, string> = {
   news: "뉴스",
   author: "저자",
   home: "홈",
+  kakao_share: "카카오 공유",
+  link_copy: "링크 복사",
 };
 
 interface TopItem {
@@ -149,18 +151,22 @@ interface Props {
   topBooks: TopItem[];
   topNews: TopItem[];
   daily: DailyCount[];
+  topKakao: TopItem[];
+  topLink: TopItem[];
 }
 
-type ChartKey = "daily" | "pie" | "books" | "news";
+type ChartKey = "daily" | "pie" | "books" | "news" | "kakao" | "link";
 
 const CHART_TITLES: Record<ChartKey, string> = {
   daily: "일별 방문 추이 (최근 14일)",
   pie: "섹션별 클릭 비율",
   books: "도서 TOP 10",
   news: "뉴스 TOP 10",
+  kakao: "카카오 공유 TOP 10",
+  link: "링크 복사 TOP 10",
 };
 
-export default function AnalyticsView({ summary, topBooks, topNews, daily }: Props) {
+export default function AnalyticsView({ summary, topBooks, topNews, daily, topKakao, topLink }: Props) {
   const [expanded, setExpanded] = useState<ChartKey | null>(null);
 
   const total = summary.reduce((acc, s) => acc + s.count, 0);
@@ -214,13 +220,37 @@ export default function AnalyticsView({ summary, topBooks, topNews, daily }: Pro
         </ResponsiveContainer>
       );
     }
+    if (key === "news") {
+      return (
+        <ResponsiveContainer width="100%" height={height}>
+          <BarChart data={topNews} layout="vertical" margin={{ left: 0 }}>
+            <XAxis type="number" tick={{ fontSize: 11 }} />
+            <YAxis type="category" dataKey="title" tick={{ fontSize: 11 }} width={140} />
+            <Tooltip />
+            <Bar dataKey="count" fill={COLORS[1]} name="클릭 수" radius={[0, 4, 4, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      );
+    }
+    if (key === "kakao") {
+      return (
+        <ResponsiveContainer width="100%" height={height}>
+          <BarChart data={topKakao} layout="vertical" margin={{ left: 0 }}>
+            <XAxis type="number" tick={{ fontSize: 11 }} />
+            <YAxis type="category" dataKey="title" tick={{ fontSize: 11 }} width={140} />
+            <Tooltip />
+            <Bar dataKey="count" fill="#FEE500" name="공유 수" radius={[0, 4, 4, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      );
+    }
     return (
       <ResponsiveContainer width="100%" height={height}>
-        <BarChart data={topNews} layout="vertical" margin={{ left: 0 }}>
+        <BarChart data={topLink} layout="vertical" margin={{ left: 0 }}>
           <XAxis type="number" tick={{ fontSize: 11 }} />
           <YAxis type="category" dataKey="title" tick={{ fontSize: 11 }} width={140} />
           <Tooltip />
-          <Bar dataKey="count" fill={COLORS[1]} name="클릭 수" radius={[0, 4, 4, 0]} />
+          <Bar dataKey="count" fill={COLORS[2]} name="복사 수" radius={[0, 4, 4, 0]} />
         </BarChart>
       </ResponsiveContainer>
     );
@@ -264,6 +294,16 @@ export default function AnalyticsView({ summary, topBooks, topNews, daily }: Pro
         <Card onClick={() => setExpanded("news")}>
           <CardTitle>{CHART_TITLES.news}</CardTitle>
           {renderChart("news", 220)}
+        </Card>
+
+        <Card onClick={() => setExpanded("kakao")}>
+          <CardTitle>{CHART_TITLES.kakao}</CardTitle>
+          {renderChart("kakao", 220)}
+        </Card>
+
+        <Card onClick={() => setExpanded("link")}>
+          <CardTitle>{CHART_TITLES.link}</CardTitle>
+          {renderChart("link", 220)}
         </Card>
       </Grid>
 

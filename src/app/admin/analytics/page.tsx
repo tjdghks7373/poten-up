@@ -52,5 +52,25 @@ export default async function AnalyticsPage() {
     count,
   }));
 
-  return <AnalyticsView summary={summary} topBooks={topBooks} topNews={topNews} daily={daily} />;
+  const kakaoMap: Record<string, { title: string; count: number }> = {};
+  for (const r of rows.filter((r) => r.type === "kakao_share")) {
+    if (!kakaoMap[r.slug]) kakaoMap[r.slug] = { title: r.title, count: 0 };
+    kakaoMap[r.slug].count += 1;
+  }
+  const topKakao = Object.entries(kakaoMap)
+    .map(([slug, v]) => ({ slug, title: v.title, count: v.count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 10);
+
+  const linkMap: Record<string, { title: string; count: number }> = {};
+  for (const r of rows.filter((r) => r.type === "link_copy")) {
+    if (!linkMap[r.slug]) linkMap[r.slug] = { title: r.title, count: 0 };
+    linkMap[r.slug].count += 1;
+  }
+  const topLink = Object.entries(linkMap)
+    .map(([slug, v]) => ({ slug, title: v.title, count: v.count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 10);
+
+  return <AnalyticsView summary={summary} topBooks={topBooks} topNews={topNews} daily={daily} topKakao={topKakao} topLink={topLink} />;
 }
