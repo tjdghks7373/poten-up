@@ -57,8 +57,27 @@ const SearchInput = styled.input`
   }
 `;
 
+const SelectWrapper = styled.div`
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+
+  &::after {
+    content: "";
+    position: absolute;
+    right: 0.75rem;
+    width: 0.4rem;
+    height: 0.4rem;
+    border-right: 1.5px solid ${theme.colors.muted};
+    border-bottom: 1.5px solid ${theme.colors.muted};
+    transform: rotate(45deg) translateY(-30%);
+    pointer-events: none;
+  }
+`;
+
 const GenreSelect = styled.select`
-  padding: 0.5rem 0.75rem;
+  appearance: none;
+  padding: 0.5rem 2.25rem 0.5rem 0.75rem;
   border: 1px solid ${theme.colors.border};
   border-radius: 0.5rem;
   font-size: 0.875rem;
@@ -197,12 +216,14 @@ export default function BooksView({ books }: { books: Book[] }) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
-        <GenreSelect value={genre} onChange={(e) => setGenre(e.target.value)}>
-          <option value="">전체 장르</option>
-          {genres.map((g) => (
-            <option key={g} value={g}>{g}</option>
-          ))}
-        </GenreSelect>
+        <SelectWrapper>
+          <GenreSelect value={genre} onChange={(e) => setGenre(e.target.value)}>
+            <option value="">전체 장르</option>
+            {genres.map((g) => (
+              <option key={g} value={g}>{g}</option>
+            ))}
+          </GenreSelect>
+        </SelectWrapper>
       </FilterRow>
 
       {filtered.length === 0 ? (
