@@ -1,4 +1,4 @@
-import { getBooks } from "@/lib/notion";
+import { getBooks } from "@/lib/db";
 import BooksView from "./BooksView";
 
 export const revalidate = 3600;

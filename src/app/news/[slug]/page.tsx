@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getNews, getNewsBySlug } from "@/lib/notion";
+import { getNews, getNewsBySlug } from "@/lib/db";
 import NewsDetailView from "./NewsDetailView";
 
 export const revalidate = 3600;

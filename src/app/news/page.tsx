@@ -1,4 +1,4 @@
-import { getNews } from "@/lib/notion";
+import { getNews } from "@/lib/db";
 import NewsView from "./NewsView";
 
 export const revalidate = 3600;

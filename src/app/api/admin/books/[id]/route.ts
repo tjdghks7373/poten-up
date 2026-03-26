@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
-import { toSlug } from "@/lib/notion";
+import { toSlug } from "@/lib/db";
 
 export async function PUT(
   request: NextRequest,

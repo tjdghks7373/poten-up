@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getBookBySlug } from "@/lib/notion";
+import { getBookBySlug } from "@/lib/db";
 import BookDetailView from "./BookDetailView";
 
 export const dynamic = "force-dynamic";

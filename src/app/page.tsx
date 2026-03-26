@@ -3,7 +3,7 @@ import FeaturedBooks from "@/components/sections/FeaturedBooks";
 import LatestNews from "@/components/sections/LatestNews";
 import AuthorsSection from "@/components/sections/AuthorsSection";
 import PageTracker from "@/components/ui/PageTracker";
-import { getBooks, getNews, getAuthors } from "@/lib/notion";
+import { getBooks, getNews, getAuthors } from "@/lib/db";
 
 export const revalidate = 3600;
 
