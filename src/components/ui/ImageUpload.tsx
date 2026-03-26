@@ -69,6 +69,25 @@ interface Props {
   aspect?: "square" | "cover";
 }
 
+async function resizeImage(file: File, maxWidth = 800, quality = 0.85): Promise<Blob> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const scale = img.width > maxWidth ? maxWidth / img.width : 1;
+      const w = Math.round(img.width * scale);
+      const h = Math.round(img.height * scale);
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      canvas.getContext("2d")!.drawImage(img, 0, 0, w, h);
+      canvas.toBlob((blob) => resolve(blob!), "image/jpeg", quality);
+    };
+    img.src = url;
+  });
+}
+
 export default function ImageUpload({ value, onChange, aspect = "cover" }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
@@ -78,8 +97,9 @@ export default function ImageUpload({ value, onChange, aspect = "cover" }: Props
     if (!file) return;
 
     setLoading(true);
+    const resized = await resizeImage(file);
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("file", new File([resized], file.name.replace(/\.[^.]+$/, ".jpg"), { type: "image/jpeg" }));
 
     const res = await fetch("/api/admin/upload", { method: "POST", body: formData });
     const data = await res.json();
