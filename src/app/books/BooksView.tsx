@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import styled from "styled-components";
@@ -29,7 +30,53 @@ const PageTitle = styled.h1`
 
 const Desc = styled.p`
   color: ${theme.colors.muted};
-  margin-bottom: 3rem;
+  margin-bottom: 1.5rem;
+`;
+
+const FilterRow = styled.div`
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+`;
+
+const SearchInput = styled.input`
+  flex: 1;
+  min-width: 160px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid ${theme.colors.border};
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  color: ${theme.colors.fg};
+  background: ${theme.colors.white};
+  font-family: inherit;
+  outline: none;
+
+  &:focus {
+    border-color: ${theme.colors.brand};
+  }
+`;
+
+const GenreSelect = styled.select`
+  padding: 0.5rem 0.75rem;
+  border: 1px solid ${theme.colors.border};
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  color: ${theme.colors.fg};
+  background: ${theme.colors.white};
+  font-family: inherit;
+  outline: none;
+  cursor: pointer;
+
+  &:focus {
+    border-color: ${theme.colors.brand};
+  }
+`;
+
+const Empty = styled.p`
+  color: ${theme.colors.muted};
+  font-size: 0.875rem;
+  padding: 2rem 0;
 `;
 
 const Grid = styled.div`
@@ -122,27 +169,62 @@ function track(type: string, slug: string, title: string) {
 }
 
 export default function BooksView({ books }: { books: Book[] }) {
+  const [query, setQuery] = useState("");
+  const [genre, setGenre] = useState("");
+
+  const genres = useMemo(() => {
+    const set = new Set(books.map((b) => b.genre).filter(Boolean));
+    return Array.from(set).sort();
+  }, [books]);
+
+  const filtered = useMemo(() => {
+    return books.filter((b) => {
+      const matchQuery = b.title.toLowerCase().includes(query.toLowerCase()) ||
+        b.author.toLowerCase().includes(query.toLowerCase());
+      const matchGenre = genre === "" || b.genre === genre;
+      return matchQuery && matchGenre;
+    });
+  }, [books, query, genre]);
+
   return (
     <Wrapper>
       <PageTitle>도서 목록</PageTitle>
       <Desc>포텐업 출판사의 모든 도서를 만나보세요.</Desc>
 
-      <Grid>
-        {books.map((book) => (
-          <BookCard key={book.id} href={`/books/${book.slug}`} onClick={() => track("book", book.slug, book.title)}>
-            <CoverWrapper>
-              {book.cover ? (
-                <CoverImage src={book.cover} alt={book.title} fill />
-              ) : (
-                <NoCover>표지 없음</NoCover>
-              )}
-            </CoverWrapper>
-            <Genre>{book.genre}</Genre>
-            <BookTitle>{book.title}</BookTitle>
-            <Author>{book.author}</Author>
-          </BookCard>
-        ))}
-      </Grid>
+      <FilterRow>
+        <SearchInput
+          placeholder="제목 또는 저자 검색..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+        <GenreSelect value={genre} onChange={(e) => setGenre(e.target.value)}>
+          <option value="">전체 장르</option>
+          {genres.map((g) => (
+            <option key={g} value={g}>{g}</option>
+          ))}
+        </GenreSelect>
+      </FilterRow>
+
+      {filtered.length === 0 ? (
+        <Empty>검색 결과가 없습니다.</Empty>
+      ) : (
+        <Grid>
+          {filtered.map((book) => (
+            <BookCard key={book.id} href={`/books/${book.slug}`} onClick={() => track("book", book.slug, book.title)}>
+              <CoverWrapper>
+                {book.cover ? (
+                  <CoverImage src={book.cover} alt={book.title} fill />
+                ) : (
+                  <NoCover>표지 없음</NoCover>
+                )}
+              </CoverWrapper>
+              <Genre>{book.genre}</Genre>
+              <BookTitle>{book.title}</BookTitle>
+              <Author>{book.author}</Author>
+            </BookCard>
+          ))}
+        </Grid>
+      )}
     </Wrapper>
   );
 }
