@@ -4,6 +4,7 @@ import { useState } from "react";
 import {
   BarChart,
   Bar,
+  Cell,
   XAxis,
   YAxis,
   Tooltip,
@@ -120,7 +121,7 @@ const CloseBtn = styled.button`
   }
 `;
 
-const COLORS = ["#4F46E5", "#10B981", "#F59E0B", "#EF4444"];
+const COLORS = ["#4F46E5", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#EC4899", "#06B6D4", "#F97316", "#14B8A6", "#6366F1"];
 const TYPE_LABELS: Record<string, string> = {
   book: "도서",
   news: "뉴스",
@@ -208,49 +209,19 @@ export default function AnalyticsView({ summary, topBooks, topNews, daily, topKa
         </ResponsiveContainer>
       );
     }
-    if (key === "books") {
-      return (
-        <ResponsiveContainer width="100%" height={height}>
-          <BarChart data={topBooks} layout="vertical" margin={{ left: 0 }}>
-            <XAxis type="number" tick={{ fontSize: 11 }} />
-            <YAxis type="category" dataKey="title" tick={{ fontSize: 11 }} width={140} />
-            <Tooltip />
-            <Bar dataKey="count" fill={COLORS[0]} name="클릭 수" radius={[0, 4, 4, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
-      );
-    }
-    if (key === "news") {
-      return (
-        <ResponsiveContainer width="100%" height={height}>
-          <BarChart data={topNews} layout="vertical" margin={{ left: 0 }}>
-            <XAxis type="number" tick={{ fontSize: 11 }} />
-            <YAxis type="category" dataKey="title" tick={{ fontSize: 11 }} width={140} />
-            <Tooltip />
-            <Bar dataKey="count" fill={COLORS[1]} name="클릭 수" radius={[0, 4, 4, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
-      );
-    }
-    if (key === "kakao") {
-      return (
-        <ResponsiveContainer width="100%" height={height}>
-          <BarChart data={topKakao} layout="vertical" margin={{ left: 0 }}>
-            <XAxis type="number" tick={{ fontSize: 11 }} />
-            <YAxis type="category" dataKey="title" tick={{ fontSize: 11 }} width={140} />
-            <Tooltip />
-            <Bar dataKey="count" fill="#FEE500" name="공유 수" radius={[0, 4, 4, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
-      );
-    }
+    const barData = key === "books" ? topBooks : key === "news" ? topNews : key === "kakao" ? topKakao : topLink;
+    const barName = key === "kakao" ? "공유 수" : key === "link" ? "복사 수" : "클릭 수";
     return (
       <ResponsiveContainer width="100%" height={height}>
-        <BarChart data={topLink} layout="vertical" margin={{ left: 0 }}>
+        <BarChart data={barData} layout="vertical" margin={{ left: 0 }}>
           <XAxis type="number" tick={{ fontSize: 11 }} />
           <YAxis type="category" dataKey="title" tick={{ fontSize: 11 }} width={140} />
           <Tooltip />
-          <Bar dataKey="count" fill={COLORS[2]} name="복사 수" radius={[0, 4, 4, 0]} />
+          <Bar dataKey="count" name={barName} radius={[0, 4, 4, 0]}>
+            {barData.map((_, i) => (
+              <Cell key={i} fill={COLORS[i % COLORS.length]} />
+            ))}
+          </Bar>
         </BarChart>
       </ResponsiveContainer>
     );
@@ -291,11 +262,6 @@ export default function AnalyticsView({ summary, topBooks, topNews, daily, topKa
           {renderChart("books", 220)}
         </Card>
 
-        <Card onClick={() => setExpanded("news")}>
-          <CardTitle>{CHART_TITLES.news}</CardTitle>
-          {renderChart("news", 220)}
-        </Card>
-
         <Card onClick={() => setExpanded("kakao")}>
           <CardTitle>{CHART_TITLES.kakao}</CardTitle>
           {renderChart("kakao", 220)}
@@ -304,6 +270,11 @@ export default function AnalyticsView({ summary, topBooks, topNews, daily, topKa
         <Card onClick={() => setExpanded("link")}>
           <CardTitle>{CHART_TITLES.link}</CardTitle>
           {renderChart("link", 220)}
+        </Card>
+
+        <Card onClick={() => setExpanded("news")}>
+          <CardTitle>{CHART_TITLES.news}</CardTitle>
+          {renderChart("news", 220)}
         </Card>
       </Grid>
 
