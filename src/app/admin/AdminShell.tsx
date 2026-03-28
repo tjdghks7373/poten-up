@@ -86,7 +86,7 @@ const LogoutBtn = styled.button`
 const Content = styled.main`
   margin-left: 220px;
   flex: 1;
-  padding: 2rem;
+  padding: 7rem 2rem 2rem 2rem;
   max-width: 900px;
 `;
 

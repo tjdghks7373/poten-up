@@ -95,7 +95,6 @@ export default function LogsView({ logs }: { logs: LogRow[] }) {
   return (
     <>
       <PageTitle>활동 로그</PageTitle>
-      <Hint>최근 200건 · 메뉴에 표시되지 않는 숨겨진 페이지입니다.</Hint>
 
       <Section>
         {logs.length === 0 ? (
