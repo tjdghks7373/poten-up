@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getBookBySlug } from "@/lib/db";
+import { supabaseAdmin } from "@/lib/supabase";
 import BookDetailView from "./BookDetailView";
 
 export const dynamic = "force-dynamic";
@@ -13,10 +14,14 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const book = await getBookBySlug(slug);
-  if (!book) return {};
+  const { data } = await supabaseAdmin
+    .from("books")
+    .select("title, author, genre, description, cover, slug")
+    .eq("slug", slug)
+    .single();
+  if (!data) return {};
 
-  const plainDesc = book.description.replace(/<[^>]*>/g, "").trim();
+  const plainDesc = data.description.replace(/<[^>]*>/g, "").trim();
   const description = [
     book.author,
     book.genre,
@@ -26,14 +31,13 @@ export async function generateMetadata({
     .join(" · ");
 
   return {
-    title: `${book.title} | 포텐업 출판사`,
+    title: `${data.title} | 포텐업 출판사`,
     description,
     openGraph: {
-      title: book.title,
+      title: data.title,
       description,
-      images: book.cover ? [{ url: book.cover }] : [],
-      url: `${BASE_URL}/books/${book.slug}`,
-      type: "book",
+      images: data.cover ? [{ url: data.cover }] : [],
+      url: `${BASE_URL}/books/${data.slug}`,
     },
   };
 }
