@@ -23,8 +23,8 @@ export async function generateMetadata({
 
   const plainDesc = data.description.replace(/<[^>]*>/g, "").trim();
   const description = [
-    book.author,
-    book.genre,
+    data.author,
+    data.genre,
     plainDesc ? plainDesc.slice(0, 120) + (plainDesc.length > 120 ? "..." : "") : null,
   ]
     .filter(Boolean)
