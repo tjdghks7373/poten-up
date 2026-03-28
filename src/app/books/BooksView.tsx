@@ -127,7 +127,7 @@ const CoverWrapper = styled.div`
   position: relative;
   border-radius: 0.5rem;
   overflow: hidden;
-  background: ${theme.colors.white};
+  background: ${theme.colors.border};
   margin-bottom: 0.75rem;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   transition: box-shadow 0.2s;
@@ -138,7 +138,7 @@ const CoverWrapper = styled.div`
 `;
 
 const CoverImage = styled(Image)`
-  object-fit: contain;
+  object-fit: cover;
   transition: transform 0.5s;
 
   ${BookCard}:hover & {
