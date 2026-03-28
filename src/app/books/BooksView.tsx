@@ -205,8 +205,6 @@ function track(type: string, slug: string, title: string) {
 export default function BooksView({ books }: { books: Book[] }) {
   const [query, setQuery] = useState("");
   const [genre, setGenre] = useState("");
-  const [searchResults, setSearchResults] = useState<Book[] | null>(null);
-  const [searching, setSearching] = useState(false);
   const [visibleCount, setVisibleCount] = useState(() => {
     if (typeof window !== "undefined") {
       return Number(sessionStorage.getItem("books_visibleCount") || PAGE_SIZE);
@@ -220,30 +218,14 @@ export default function BooksView({ books }: { books: Book[] }) {
     return Array.from(set).sort();
   }, [books]);
 
-  // 검색어 변경 시 FTS API 호출 (300ms 디바운스)
-  useEffect(() => {
-    if (!query.trim()) {
-      setSearchResults(null);
-      setSearching(false);
-      return;
-    }
-    setSearching(true);
-    const timer = setTimeout(async () => {
-      try {
-        const res = await fetch(`/api/search?type=books&q=${encodeURIComponent(query)}`);
-        const data: Book[] = await res.json();
-        setSearchResults(data);
-      } finally {
-        setSearching(false);
-      }
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [query]);
-
   const filtered = useMemo(() => {
-    const base = searchResults ?? books;
-    return base.filter((b) => genre === "" || b.genre === genre);
-  }, [books, searchResults, genre]);
+    return books.filter((b) => {
+      const matchQuery = b.title.toLowerCase().includes(query.toLowerCase()) ||
+        b.author.toLowerCase().includes(query.toLowerCase());
+      const matchGenre = genre === "" || b.genre === genre;
+      return matchQuery && matchGenre;
+    });
+  }, [books, query, genre]);
 
   const visible = filtered.slice(0, visibleCount);
   const hasMore = visibleCount < filtered.length;
@@ -303,9 +285,7 @@ export default function BooksView({ books }: { books: Book[] }) {
         </SelectWrapper>
       </FilterRow>
 
-      {searching ? (
-        <Empty>검색 중...</Empty>
-      ) : filtered.length === 0 ? (
+      {filtered.length === 0 ? (
         <Empty>검색 결과가 없습니다.</Empty>
       ) : (
         <Grid>
