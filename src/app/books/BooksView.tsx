@@ -205,7 +205,12 @@ function track(type: string, slug: string, title: string) {
 export default function BooksView({ books }: { books: Book[] }) {
   const [query, setQuery] = useState("");
   const [genre, setGenre] = useState("");
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [visibleCount, setVisibleCount] = useState(() => {
+    if (typeof window !== "undefined") {
+      return Number(sessionStorage.getItem("books_visibleCount") || PAGE_SIZE);
+    }
+    return PAGE_SIZE;
+  });
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   const genres = useMemo(() => {
@@ -225,10 +230,21 @@ export default function BooksView({ books }: { books: Book[] }) {
   const visible = filtered.slice(0, visibleCount);
   const hasMore = visibleCount < filtered.length;
 
+  // 뒤로가기 시 스크롤 복원
+  useEffect(() => {
+    const savedScroll = Number(sessionStorage.getItem("books_scrollY") || 0);
+    if (savedScroll > 0) {
+      setTimeout(() => window.scrollTo({ top: savedScroll }), 50);
+      sessionStorage.removeItem("books_scrollY");
+    }
+  }, []);
+
   function handleFilterChange(newQuery: string, newGenre: string) {
     setQuery(newQuery);
     setGenre(newGenre);
     setVisibleCount(PAGE_SIZE);
+    sessionStorage.removeItem("books_visibleCount");
+    sessionStorage.removeItem("books_scrollY");
   }
 
   useEffect(() => {
@@ -274,7 +290,11 @@ export default function BooksView({ books }: { books: Book[] }) {
       ) : (
         <Grid>
           {visible.map((book) => (
-            <BookCard key={book.id} href={`/books/${book.slug}`} onClick={() => track("book", book.slug, book.title)}>
+            <BookCard key={book.id} href={`/books/${book.slug}`} onClick={() => {
+                track("book", book.slug, book.title);
+                sessionStorage.setItem("books_visibleCount", String(visibleCount));
+                sessionStorage.setItem("books_scrollY", String(window.scrollY));
+              }}>
               <CoverWrapper>
                 {book.cover ? (
                   <CoverImage src={book.cover} alt={book.title} fill />
