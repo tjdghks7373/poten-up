@@ -1,10 +1,42 @@
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { getBookBySlug } from "@/lib/db";
 import BookDetailView from "./BookDetailView";
 
 export const dynamic = "force-dynamic";
 
 const BASE_URL = "https://poten-up.vercel.app";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const book = await getBookBySlug(slug);
+  if (!book) return {};
+
+  const plainDesc = book.description.replace(/<[^>]*>/g, "").trim();
+  const description = [
+    book.author,
+    book.genre,
+    plainDesc ? plainDesc.slice(0, 120) + (plainDesc.length > 120 ? "..." : "") : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+  return {
+    title: `${book.title} | 포텐업 출판사`,
+    description,
+    openGraph: {
+      title: book.title,
+      description,
+      images: book.cover ? [{ url: book.cover }] : [],
+      url: `${BASE_URL}/books/${book.slug}`,
+      type: "book",
+    },
+  };
+}
 
 export default async function BookDetailPage({
   params,
