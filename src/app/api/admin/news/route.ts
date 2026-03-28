@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { toSlug } from "@/lib/db";
+import { writeLog } from "@/lib/log";
 
 export async function GET() {
   const { data, error } = await supabaseAdmin
@@ -29,5 +30,6 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  await writeLog("추가", "뉴스", body.title);
   return NextResponse.json(data);
 }
