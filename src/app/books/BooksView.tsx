@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 
 const PAGE_SIZE = 10;
 import Image from "next/image";
@@ -100,38 +100,6 @@ const Empty = styled.p`
   padding: 2rem 0;
 `;
 
-const Pagination = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.375rem;
-  margin-top: 2.5rem;
-`;
-
-const PageBtn = styled.button<{ $active?: boolean }>`
-  width: 2rem;
-  height: 2rem;
-  border-radius: 0.375rem;
-  font-size: 0.875rem;
-  font-family: inherit;
-  font-weight: ${({ $active }) => $active ? "700" : "400"};
-  background: ${({ $active }) => $active ? theme.colors.brand : "transparent"};
-  color: ${({ $active }) => $active ? theme.colors.white : theme.colors.fg};
-  border: 1px solid ${({ $active }) => $active ? theme.colors.brand : theme.colors.border};
-  cursor: pointer;
-  transition: all 0.15s;
-
-  &:hover:not(:disabled) {
-    border-color: ${theme.colors.brand};
-    color: ${({ $active }) => $active ? theme.colors.white : theme.colors.brand};
-  }
-
-  &:disabled {
-    opacity: 0.35;
-    cursor: default;
-  }
-`;
-
 const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -213,6 +181,19 @@ const Author = styled.p`
   color: ${theme.colors.muted};
 `;
 
+const Sentinel = styled.div`
+  height: 1px;
+  margin-top: 2rem;
+`;
+
+const LoadingRow = styled.div`
+  display: flex;
+  justify-content: center;
+  padding: 1.5rem 0;
+  color: ${theme.colors.muted};
+  font-size: 0.875rem;
+`;
+
 function track(type: string, slug: string, title: string) {
   fetch("/api/track", {
     method: "POST",
@@ -224,7 +205,8 @@ function track(type: string, slug: string, title: string) {
 export default function BooksView({ books }: { books: Book[] }) {
   const [query, setQuery] = useState("");
   const [genre, setGenre] = useState("");
-  const [page, setPage] = useState(1);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
   const genres = useMemo(() => {
     const set = new Set(books.map((b) => b.genre).filter(Boolean));
@@ -240,14 +222,31 @@ export default function BooksView({ books }: { books: Book[] }) {
     });
   }, [books, query, genre]);
 
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const visible = filtered.slice(0, visibleCount);
+  const hasMore = visibleCount < filtered.length;
 
   function handleFilterChange(newQuery: string, newGenre: string) {
     setQuery(newQuery);
     setGenre(newGenre);
-    setPage(1);
+    setVisibleCount(PAGE_SIZE);
   }
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleCount((prev) => prev + PAGE_SIZE);
+        }
+      },
+      { rootMargin: "200px" }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [filtered]);
 
   return (
     <Wrapper>
@@ -274,7 +273,7 @@ export default function BooksView({ books }: { books: Book[] }) {
         <Empty>검색 결과가 없습니다.</Empty>
       ) : (
         <Grid>
-          {paged.map((book) => (
+          {visible.map((book) => (
             <BookCard key={book.id} href={`/books/${book.slug}`} onClick={() => track("book", book.slug, book.title)}>
               <CoverWrapper>
                 {book.cover ? (
@@ -291,14 +290,11 @@ export default function BooksView({ books }: { books: Book[] }) {
         </Grid>
       )}
 
-      {totalPages > 1 && (
-        <Pagination>
-          <PageBtn onClick={() => setPage(page - 1)} disabled={page === 1}>‹</PageBtn>
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-            <PageBtn key={p} $active={p === page} onClick={() => setPage(p)}>{p}</PageBtn>
-          ))}
-          <PageBtn onClick={() => setPage(page + 1)} disabled={page === totalPages}>›</PageBtn>
-        </Pagination>
+      {hasMore && (
+        <>
+          <Sentinel ref={sentinelRef} />
+          <LoadingRow>불러오는 중...</LoadingRow>
+        </>
       )}
     </Wrapper>
   );
