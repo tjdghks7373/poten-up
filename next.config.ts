@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  htmlLimitedBots: ".*",
+  htmlLimitedBots: /.*/,
   compiler: {
     styledComponents: true,
   },
