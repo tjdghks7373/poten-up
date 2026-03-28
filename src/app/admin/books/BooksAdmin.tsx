@@ -123,6 +123,44 @@ const BtnRow = styled.div`
   margin-top: 1.25rem;
 `;
 
+const DraftBar = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.875rem;
+  background: ${theme.colors.accent}18;
+  border: 1px solid ${theme.colors.accent}44;
+  border-radius: 0.5rem;
+  margin-bottom: 1.25rem;
+  font-size: 0.8125rem;
+`;
+
+const DraftText = styled.span`
+  flex: 1;
+  color: ${theme.colors.fg};
+`;
+
+const DraftBtn = styled.button`
+  font-size: 0.8125rem;
+  font-family: inherit;
+  font-weight: 600;
+  color: ${theme.colors.brand};
+  &:hover { text-decoration: underline; }
+`;
+
+const DraftDismiss = styled.button`
+  font-size: 0.8125rem;
+  font-family: inherit;
+  color: ${theme.colors.muted};
+  &:hover { color: ${theme.colors.fg}; }
+`;
+
+const AutoSaved = styled.span`
+  font-size: 0.75rem;
+  color: ${theme.colors.muted};
+  margin-left: auto;
+`;
+
 const Btn = styled.button<{ $variant?: "danger" | "secondary" }>`
   padding: 0.5rem 1.25rem;
   border-radius: 0.5rem;
@@ -231,6 +269,8 @@ const SaveOrderBtn = styled.button`
   &:hover { opacity: 0.85; }
 `;
 
+const DRAFT_KEY = "draft_book";
+
 export default function BooksAdmin() {
   const [books, setBooks] = useState<BookRow[]>([]);
   const [form, setForm] = useState<Omit<BookRow, "id">>(empty);
@@ -240,7 +280,49 @@ export default function BooksAdmin() {
   const [previewBook, setPreviewBook] = useState<BookRow | null>(null);
   const [orderChanged, setOrderChanged] = useState(false);
   const [savingOrder, setSavingOrder] = useState(false);
+  const [hasDraft, setHasDraft] = useState(false);
+  const [draftSaved, setDraftSaved] = useState<string | null>(null);
   const dragIndex = useRef<number | null>(null);
+
+  // 마운트 시 임시저장 확인
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (raw) {
+        const { form: saved } = JSON.parse(raw);
+        if (saved?.title || saved?.author) setHasDraft(true);
+      }
+    } catch {}
+  }, []);
+
+  // 폼 변경 시 자동 임시저장 (새 항목 작성 중일 때만)
+  useEffect(() => {
+    if (editId) return;
+    const hasContent = form.title || form.author || form.description;
+    if (!hasContent) return;
+    const timer = setTimeout(() => {
+      const time = new Date().toLocaleTimeString("ko", { hour: "2-digit", minute: "2-digit" });
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ form, savedAt: time }));
+      setDraftSaved(time);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [form, editId]);
+
+  function loadDraft() {
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (!raw) return;
+      const { form: saved } = JSON.parse(raw);
+      setForm(saved);
+      setHasDraft(false);
+    } catch {}
+  }
+
+  function clearDraft() {
+    localStorage.removeItem(DRAFT_KEY);
+    setHasDraft(false);
+    setDraftSaved(null);
+  }
 
   async function load() {
     const res = await fetch("/api/admin/books");
@@ -269,6 +351,7 @@ export default function BooksAdmin() {
   function cancelEdit() {
     setEditId(null);
     setForm(empty);
+    clearDraft();
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -303,6 +386,7 @@ export default function BooksAdmin() {
 
     await load();
     cancelEdit();
+    clearDraft();
     setSaving(false);
   }
 
@@ -344,7 +428,17 @@ export default function BooksAdmin() {
       <PageTitle>도서 관리</PageTitle>
 
       <Section>
-        <SectionTitle>{editId ? "도서 수정" : "도서 추가"}</SectionTitle>
+        <div style={{ display: "flex", alignItems: "center", marginBottom: "1.25rem" }}>
+          <SectionTitle style={{ marginBottom: 0 }}>{editId ? "도서 수정" : "도서 추가"}</SectionTitle>
+          {!editId && draftSaved && <AutoSaved>임시저장됨 {draftSaved}</AutoSaved>}
+        </div>
+        {!editId && hasDraft && (
+          <DraftBar>
+            <DraftText>⚡ 작성 중이던 내용이 있습니다.</DraftText>
+            <DraftBtn onClick={loadDraft}>불러오기</DraftBtn>
+            <DraftDismiss onClick={clearDraft}>무시</DraftDismiss>
+          </DraftBar>
+        )}
         <form onSubmit={handleSubmit}>
           <Grid>
             <Field>
