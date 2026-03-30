@@ -55,18 +55,17 @@ export default function NewsAdmin() {
   const [editId, setEditId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [preview, setPreview] = useState(false);
-  const [hasDraft, setHasDraft] = useState(false);
-  const [draftSaved, setDraftSaved] = useState<string | null>(null);
-
-  useEffect(() => {
+  const [hasDraft, setHasDraft] = useState(() => {
     try {
       const raw = localStorage.getItem(DRAFT_KEY);
       if (raw) {
         const { form: saved } = JSON.parse(raw);
-        if (saved?.title) setHasDraft(true);
+        return !!saved?.title;
       }
     } catch {}
-  }, []);
+    return false;
+  });
+  const [draftSaved, setDraftSaved] = useState<string | null>(null);
 
   useEffect(() => {
     if (editId) return;
@@ -100,6 +99,7 @@ export default function NewsAdmin() {
     setNewsList(await res.json());
   }
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { load(); }, []);
 
   function startEdit(item: NewsRow) {

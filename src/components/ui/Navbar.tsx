@@ -154,12 +154,12 @@ const MobileLink = styled(Link)<{ $active?: boolean }>`
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
-  const [dark, setDark] = useState(false);
+  const [dark, setDark] = useState(() =>
+    typeof document !== "undefined"
+      ? document.documentElement.getAttribute("data-theme") === "dark"
+      : false
+  );
   const pathname = usePathname();
-
-  useEffect(() => {
-    setDark(document.documentElement.getAttribute("data-theme") === "dark");
-  }, []);
 
   function toggleTheme() {
     const next = !dark;

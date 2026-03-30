@@ -280,20 +280,18 @@ export default function BooksAdmin() {
   const [previewBook, setPreviewBook] = useState<BookRow | null>(null);
   const [orderChanged, setOrderChanged] = useState(false);
   const [savingOrder, setSavingOrder] = useState(false);
-  const [hasDraft, setHasDraft] = useState(false);
-  const [draftSaved, setDraftSaved] = useState<string | null>(null);
-  const dragIndex = useRef<number | null>(null);
-
-  // 마운트 시 임시저장 확인
-  useEffect(() => {
+  const [hasDraft, setHasDraft] = useState(() => {
     try {
       const raw = localStorage.getItem(DRAFT_KEY);
       if (raw) {
         const { form: saved } = JSON.parse(raw);
-        if (saved?.title || saved?.author) setHasDraft(true);
+        return !!(saved?.title || saved?.author);
       }
     } catch {}
-  }, []);
+    return false;
+  });
+  const [draftSaved, setDraftSaved] = useState<string | null>(null);
+  const dragIndex = useRef<number | null>(null);
 
   // 폼 변경 시 자동 임시저장 (새 항목 작성 중일 때만)
   useEffect(() => {
@@ -331,6 +329,7 @@ export default function BooksAdmin() {
     setOrderChanged(false);
   }
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { load(); }, []);
 
   function startEdit(book: BookRow) {

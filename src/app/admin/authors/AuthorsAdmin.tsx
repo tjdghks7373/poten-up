@@ -46,6 +46,7 @@ export default function AuthorsAdmin() {
     setAuthors(await res.json());
   }
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { load(); }, []);
 
   function startEdit(author: AuthorRow) {

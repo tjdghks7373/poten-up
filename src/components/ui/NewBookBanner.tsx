@@ -83,6 +83,7 @@ const STORAGE_KEY = "banner_dismissed";
 export default function NewBookBanner({ title, slug, author }: Props) {
   const [visible, setVisible] = useState(false);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     const dismissed = sessionStorage.getItem(STORAGE_KEY);
     if (dismissed !== slug) setVisible(true);
